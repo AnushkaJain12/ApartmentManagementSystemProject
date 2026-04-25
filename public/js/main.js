@@ -39,6 +39,25 @@ window.addEventListener('scroll', () => {
 // Load Data
 document.addEventListener('DOMContentLoaded', () => {
     fetchApartments();
+
+    // Mobile Menu Toggle
+    const mobileMenu = document.getElementById('mobile-menu');
+    const navLinksContainer = document.getElementById('nav-links');
+
+    if (mobileMenu) {
+        mobileMenu.addEventListener('click', () => {
+            navLinksContainer.classList.toggle('active');
+            mobileMenu.classList.toggle('is-active');
+        });
+    }
+
+    // Close mobile menu when a link is clicked
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinksContainer.classList.remove('active');
+            mobileMenu.classList.remove('is-active');
+        });
+    });
 });
 
 // Fetch All Apartments
@@ -176,37 +195,39 @@ async function fetchInventory(aptId) {
     }
 
     list.innerHTML = `
-        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
-            <thead>
-                <tr style="text-align: left; border-bottom: 2px solid #eee; font-size: 0.8rem; color: var(--text-light);">
-                    <th style="padding: 1rem;">ITEM NAME</th>
-                    <th style="padding: 1rem;">QTY</th>
-                    <th style="padding: 1rem;">CONDITION</th>
-                    <th style="padding: 1rem;">ACTION</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${items.map(item => `
-                    <tr style="border-bottom: 1px solid #eee; font-size: 0.9rem;">
-                        <td style="padding: 1rem; font-weight: 600;">${item.itemName}</td>
-                        <td style="padding: 1rem;">${item.quantity}</td>
-                        <td style="padding: 1rem;">
-                            <span style="color: ${item.condition === 'Damaged' ? '#ff4757' : (item.condition === 'New' ? 'var(--flash-teal)' : 'var(--text-dark)')}">
-                                ${item.condition}
-                            </span>
-                        </td>
-                        <td style="padding: 1rem; display: flex; gap: 0.5rem;">
-                            <button onclick="editItem('${item._id}', '${item.itemName}', ${item.quantity}, '${item.condition}', '${item.apartmentId}')" style="background: none; border: none; cursor: pointer;">
-                                <img src="https://img.icons8.com/ios/50/008080/edit.png" width="16"/>
-                            </button>
-                            <button onclick="deleteItem('${item._id}', '${item.apartmentId}')" style="background: none; border: none; cursor: pointer;">
-                                <img src="https://img.icons8.com/ios/50/ff4757/delete-forever.png" width="16"/>
-                            </button>
-                        </td>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; min-width: 500px; border-collapse: collapse; margin-top: 1rem;">
+                <thead>
+                    <tr style="text-align: left; border-bottom: 2px solid #eee; font-size: 0.8rem; color: var(--text-light);">
+                        <th style="padding: 1rem;">ITEM NAME</th>
+                        <th style="padding: 1rem;">QTY</th>
+                        <th style="padding: 1rem;">CONDITION</th>
+                        <th style="padding: 1rem;">ACTION</th>
                     </tr>
-                `).join('')}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    ${items.map(item => `
+                        <tr style="border-bottom: 1px solid #eee; font-size: 0.9rem;">
+                            <td style="padding: 1rem; font-weight: 600;">${item.itemName}</td>
+                            <td style="padding: 1rem;">${item.quantity}</td>
+                            <td style="padding: 1rem;">
+                                <span style="color: ${item.condition === 'Damaged' ? '#ff4757' : (item.condition === 'New' ? 'var(--flash-teal)' : 'var(--text-dark)')}">
+                                    ${item.condition}
+                                </span>
+                            </td>
+                            <td style="padding: 1rem; display: flex; gap: 0.5rem;">
+                                <button onclick="editItem('${item._id}', '${item.itemName}', ${item.quantity}, '${item.condition}', '${item.apartmentId}')" style="background: none; border: none; cursor: pointer;">
+                                    <img src="https://img.icons8.com/ios/50/008080/edit.png" width="16"/>
+                                </button>
+                                <button onclick="deleteItem('${item._id}', '${item.apartmentId}')" style="background: none; border: none; cursor: pointer;">
+                                    <img src="https://img.icons8.com/ios/50/ff4757/delete-forever.png" width="16"/>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
     `;
 }
 
