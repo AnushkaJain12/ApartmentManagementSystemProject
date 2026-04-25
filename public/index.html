@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LNMIIT | Staff Apartment Allotment</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    
+    <nav class="glass-nav">
+        <div class="logo">LNMIIT<span>HOUSING</span></div>
+        <ul class="nav-links">
+            <li><a href="#" class="active">Home</a></li>
+            <li><a href="#map-info">Campus Map</a></li>
+            <li><a href="#inventory">Apartments</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="flash-btn" onclick="showModal('addModal')">ADD UNIT</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="hero-new">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h3>CAMPUS RESIDENCY</h3>
+            <h1>LNMIIT Staff & Faculty <br>Apartment Allotment</h1>
+            <div class="search-bar">
+                <input type="text" placeholder="Search by Block or Apartment No..." id="search-input">
+                <button onclick="scrollToResults()"><img src="https://img.icons8.com/ios-filled/50/ffffff/search--v1.png" width="28"/></button>
+            </div>
+        </div>
+        <!-- Wave Divider -->
+        <div class="wave-container">
+            <svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#ffffff" fill-opacity="1" d="M0,192L48,197.3C96,203,192,213,288,192C384,171,480,117,576,117.3C672,117,768,171,864,197.3C960,224,1056,224,1152,197.3C1248,171,1344,117,1392,90.7L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            </svg>
+        </div>
+    </header>
+
+    <!-- Category Icons -->
+    <section class="categories">
+        <div class="cat-item" onclick="showAllApartments()">
+            <div class="cat-icon"><img src="https://img.icons8.com/ios/50/008080/checklist.png"/></div>
+            <p>Show All</p>
+        </div>
+        <div class="cat-item" onclick="filterByBlock('Professor Housing')">
+            <div class="cat-icon"><img src="https://img.icons8.com/ios/50/008080/university.png"/></div>
+            <p>Professor</p>
+        </div>
+        <div class="cat-item" onclick="filterByBlock('Associate Professor Housing')">
+            <div class="cat-icon"><img src="https://img.icons8.com/ios/50/008080/teacher.png"/></div>
+            <p>Associate Prof</p>
+        </div>
+        <div class="cat-item" onclick="filterByBlock('Assistant Professor Housing')">
+            <div class="cat-icon"><img src="https://img.icons8.com/ios/50/008080/student-registration.png"/></div>
+            <p>Assistant Prof</p>
+        </div>
+        <div class="cat-item" onclick="filterByBlock('Grade 3 Housing')">
+            <div class="cat-icon"><img src="https://img.icons8.com/ios/50/008080/work.png"/></div>
+            <p>Grade 3 Staff</p>
+        </div>
+        <div class="cat-item" onclick="filterByBlock('Grade 4 Housing')">
+            <div class="cat-icon"><img src="https://img.icons8.com/ios/50/008080/maintenance.png"/></div>
+            <p>Grade 4 Staff</p>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section id="map-info" class="map-section">
+        <div class="map-container">
+            <div class="map-text">
+                <h2>Explore the Campus</h2>
+                <p class="subtitle">INTERACTIVE HOUSING MAP</p>
+                <div class="info-box">
+                    <p>Locate facilities, services, and key residency blocks at a glance. Our allotment system ensures priority based on grade and department.</p>
+                    <ul class="grade-list">
+                        <li><strong>Professor Housing:</strong> Premium 3BHK villas for Senior Faculty.</li>
+                        <li><strong>Associate Prof:</strong> Spacious 2BHK/3BHK units in Block 10.</li>
+                        <li><strong>Assistant Prof:</strong> Modern 1BHK/2BHK units in Block 11.</li>
+                        <li><strong>Grade 3:</strong> Dedicated housing for Technical & Lab Staff.</li>
+                        <li><strong>Grade 4:</strong> Residential quarters for Support Staff.</li>
+                    </ul>
+                </div>
+                <button class="btn-teal" onclick="showModal('fullMapModal')">VIEW FULL MAP</button>
+            </div>
+            <div class="map-image">
+                <img src="Images/campusMap.png" alt="LNMIIT Campus Map">
+            </div>
+        </div>
+    </section>
+
+    <!-- Apartment Inventory -->
+    <section id="inventory" class="inventory-new">
+        <div class="section-title">
+            <h2>Available Residences</h2>
+            <p>CURRENT VACANCIES & OCCUPANCY STATUS</p>
+        </div>
+        <div class="apartment-grid" id="apartment-grid">
+            <!-- Dynamic data -->
+        </div>
+    </section>
+
+    <!-- Modals -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideModal('addModal')">&times;</span>
+            <h2>Add New Apartment</h2>
+            <form id="add-apartment-form">
+                <div class="form-group">
+                    <label>Housing Block</label>
+                    <select name="block" required>
+                        <option value="Professor Housing">Professor Housing</option>
+                        <option value="Associate Professor Housing">Associate Professor Housing</option>
+                        <option value="Assistant Professor Housing">Assistant Professor Housing</option>
+                        <option value="Director House">Director House</option>
+                        <option value="Grade 3 Housing">Grade 3 Housing</option>
+                        <option value="Grade 4 Housing">Grade 4 Housing</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Apartment No.</label>
+                        <input type="text" name="apartmentNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select name="type">
+                            <option value="1BHK">1BHK</option>
+                            <option value="2BHK">2BHK</option>
+                            <option value="3BHK">3BHK</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Included Amenities</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: #f9f9f9; padding: 1rem; border-radius: 8px;">
+                        <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px;"><input type="checkbox" name="amenities" value="Parking"> Parking</label>
+                        <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px;"><input type="checkbox" name="amenities" value="AC"> AC</label>
+                        <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px;"><input type="checkbox" name="amenities" value="Geyser"> Geyser</label>
+                        <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px;"><input type="checkbox" name="amenities" value="Modular Kitchen"> Kitchen</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">Register Unit</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="allotModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideModal('allotModal')">&times;</span>
+            <h2>Update Allotment</h2>
+            <form id="allot-form">
+                <input type="hidden" name="id" id="edit-id">
+                <div class="form-group">
+                    <label>Faculty Name</label>
+                    <input type="text" name="occupantName" id="edit-name">
+                </div>
+                <div class="form-group">
+                    <label>Allotment Date</label>
+                    <input type="date" name="allotmentDate" id="edit-allot-date">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status" id="edit-status">
+                        <option value="Available">Available</option>
+                        <option value="Occupied">Occupied</option>
+                        <option value="Maintenance">Maintenance</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" class="btn-submit" style="flex: 2;">Update</button>
+                    <button type="button" class="btn-teal" style="background: var(--text-light); flex: 1;" onclick="viewHistory()">HISTORY</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" onclick="hideModal('historyModal')">&times;</span>
+            <h2>Allotment History</h2>
+            <div id="history-list" style="margin-top: 1rem;">
+                <!-- History items dynamic -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Map Modal -->
+    <div id="fullMapModal" class="modal">
+        <div class="modal-content" style="max-width: 95%; width: 1200px;">
+            <span class="close" onclick="hideModal('fullMapModal')">&times;</span>
+            <h2>LNMIIT Campus Layout</h2>
+            <img src="Images/campusMap.png" style="width: 100%; border-radius: 10px; margin-top: 1rem;">
+        </div>
+    </div>
+
+    <!-- Inventory Modal -->
+    <div id="inventoryModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="close" onclick="hideModal('inventoryModal')">&times;</span>
+            <h2>Unit Inventory</h2>
+            <p id="inv-apartment-desc" style="color: var(--text-light); margin-bottom: 2rem;"></p>
+            
+            <div id="item-list" style="margin-bottom: 2rem;">
+                <!-- Items list dynamic -->
+            </div>
+
+            <button class="flash-btn" onclick="showModal('addItemModal')">+ ADD ITEM</button>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="addItemModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideModal('addItemModal')">&times;</span>
+            <h2>Add Asset/Item</h2>
+            <form id="add-item-form">
+                <input type="hidden" name="apartmentId" id="inv-apt-id">
+                <div class="form-group">
+                    <label>Item Name</label>
+                    <input type="text" name="itemName" placeholder="e.g. Wooden Bed, Office Chair" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" name="quantity" value="1" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Condition</label>
+                        <select name="condition">
+                            <option value="New">New</option>
+                            <option value="Good">Good</option>
+                            <option value="Damaged">Damaged</option>
+                            <option value="Needs Replacement">Needs Replacement</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">Add to Inventory</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div id="editItemModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideModal('editItemModal')">&times;</span>
+            <h2>Edit Asset/Item</h2>
+            <form id="edit-item-form">
+                <input type="hidden" name="itemId" id="edit-item-id">
+                <input type="hidden" name="apartmentId" id="edit-item-apt-id">
+                <div class="form-group">
+                    <label>Item Name</label>
+                    <input type="text" name="itemName" id="edit-item-name" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" name="quantity" id="edit-item-qty" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Condition</label>
+                        <select name="condition" id="edit-item-cond">
+                            <option value="New">New</option>
+                            <option value="Good">Good</option>
+                            <option value="Damaged">Damaged</option>
+                            <option value="Needs Replacement">Needs Replacement</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <footer class="teal-footer">
+        <div class="footer-grid">
+            <div class="footer-info">
+                <h3>LNMIIT Housing</h3>
+                <p>Gram - Rupa Ki Nangal, Post - Sumel, Via - Jamdoli, Jaipur-302031</p>
+            </div>
+            <div class="footer-links">
+                <p>Follow Us</p>
+                <div class="socials">
+                    <!-- Icons -->
+                </div>
+            </div>
+            <div class="footer-map-mini">
+                <img src="Images/campusMap.png" width="100">
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
