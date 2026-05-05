@@ -211,15 +211,57 @@
       function openAllotModal(id, name, status, date, facultyId) {
           document.getElementById('edit-id').value = id;
           document.getElementById('edit-status').value = status;
-          document.getElementById('edit-faculty-id').value = facultyId === 'null' ? '' : facultyId;
+          document.getElementById('edit-faculty-id').value = facultyId === 'null' || !facultyId ? '' : facultyId;
           
-          if (date) {
-              document.getElementById('edit-allot-date').value = new Date(date).toISOString().split('T')[0];
+          const facInput = document.getElementById('edit-faculty-id');
+          const dateInput = document.getElementById('edit-allot-date');
+          const facGroup = facInput.closest('.form-group');
+          const dateGroup = dateInput.closest('.form-group');
+
+          if (status === 'Available' || status === 'Maintenance') {
+              facGroup.style.display = 'none';
+              dateGroup.style.display = 'none';
           } else {
-              document.getElementById('edit-allot-date').value = '';
+              facGroup.style.display = 'block';
+              dateGroup.style.display = 'block';
+          }
+
+          if (date) {
+              dateInput.value = new Date(date).toISOString().split('T')[0];
+          } else {
+              dateInput.value = '';
           }
           showModal('allotModal');
       }
+
+      document.getElementById('edit-status').addEventListener('change', (e) => {
+          const facInput = document.getElementById('edit-faculty-id');
+          const dateInput = document.getElementById('edit-allot-date');
+          const facGroup = facInput.closest('.form-group');
+          const dateGroup = dateInput.closest('.form-group');
+
+          if (e.target.value === 'Available' || e.target.value === 'Maintenance') {
+              facInput.value = '';
+              dateInput.value = '';
+              facGroup.style.display = 'none';
+              dateGroup.style.display = 'none';
+          } else {
+              facGroup.style.display = 'block';
+              dateGroup.style.display = 'block';
+          }
+      });
+
+      document.getElementById('edit-faculty-id').addEventListener('input', (e) => {
+          const statusSelect = document.getElementById('edit-status');
+          const dateInput = document.getElementById('edit-allot-date');
+          if (e.target.value.trim() !== '') {
+              statusSelect.value = 'Occupied';
+              statusSelect.dispatchEvent(new Event('change'));
+              if (!dateInput.value) {
+                  dateInput.value = new Date().toISOString().split('T')[0];
+              }
+          }
+      });
 
       document.getElementById('allot-form').addEventListener('submit', async (e) => {
           e.preventDefault();

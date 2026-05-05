@@ -613,13 +613,27 @@ function openAllotModal(id, name, status, date, facultyId) {
     document.getElementById('edit-faculty-id').value = facultyId && facultyId !== 'undefined' ? facultyId : '';
     document.getElementById('edit-status').value = status;
     
+    // Toggle field visibility based on status
+    const facultyIdInput = document.getElementById('edit-faculty-id');
+    const dateInput = document.getElementById('edit-allot-date');
+    const facultyGroup = facultyIdInput.closest('.form-group');
+    const dateGroup = dateInput.closest('.form-group');
+
+    if (status === 'Available' || status === 'Maintenance') {
+        facultyGroup.style.display = 'none';
+        dateGroup.style.display = 'none';
+    } else {
+        facultyGroup.style.display = 'block';
+        dateGroup.style.display = 'block';
+    }
+
     // Format date for input type="date" (YYYY-MM-DD)
     if (date && date !== 'null' && date !== 'undefined') {
         const d = new Date(date);
         const formatted = d.toISOString().split('T')[0];
-        document.getElementById('edit-allot-date').value = formatted;
+        dateInput.value = formatted;
     } else {
-        document.getElementById('edit-allot-date').value = '';
+        dateInput.value = '';
     }
     
     showModal('allotModal');
@@ -804,17 +818,16 @@ document.getElementById('add-apartment-form').addEventListener('submit', async (
     }
 });
 
-document.getElementById('edit-name').addEventListener('input', (e) => {
+document.getElementById('edit-faculty-id').addEventListener('input', (e) => {
     const statusSelect = document.getElementById('edit-status');
     const dateInput = document.getElementById('edit-allot-date');
     if (e.target.value.trim() !== '') {
         statusSelect.value = 'Occupied';
+        // Trigger the change event to show the fields if they were hidden
+        statusSelect.dispatchEvent(new Event('change'));
         if (!dateInput.value) {
             dateInput.value = new Date().toISOString().split('T')[0];
         }
-    } else {
-        statusSelect.value = 'Available';
-        dateInput.value = '';
     }
 });
 
