@@ -747,56 +747,77 @@
       </div>
     </div>
 
-    <!-- Management Pages (Admin Only) -->
-    <div id="tenantsPage" class="modal">
-      <div class="modal-content" style="max-width: 95%; width: 1200px; padding: 3rem;">
-        <span class="close" onclick="hideModal('tenantsPage')">&times;</span>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <!-- Full Page Management Sections (Admin Only) -->
+    <section id="tenantsPage" class="admin-full-page" style="display: none;">
+      <div style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+        <button class="back-btn" onclick="showAdminDashboard()">← Back to Dashboard</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; margin-top: 1rem;">
           <div>
-            <h1 style="font-size: 2.5rem; color: var(--text-dark);">Faculty Accounts</h1>
-            <p style="color: var(--text-light);">Dashboard > Faculty Management</p>
+            <h1 style="font-size: 2.5rem; color: var(--text-dark); margin: 0;">Faculty Accounts</h1>
+            <p style="color: var(--text-light); margin-top: 0.5rem;">System Management > Accounts</p>
           </div>
           <button class="flash-btn" onclick="showModal('addFacultyModal')">+ Register New Faculty</button>
         </div>
-        <div id="tenants-table-container" class="admin-table-wrapper">
-          <!-- Table dynamic -->
-        </div>
+        <div id="tenants-table-container" class="admin-table-wrapper"></div>
       </div>
-    </div>
+    </section>
 
-    <div id="globalInventoryPage" class="modal">
-      <div class="modal-content" style="max-width: 95%; width: 1200px; padding: 3rem;">
-        <span class="close" onclick="hideModal('globalInventoryPage')">&times;</span>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <section id="globalInventoryPage" class="admin-full-page" style="display: none;">
+      <div style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+        <button class="back-btn" onclick="showAdminDashboard()">← Back to Dashboard</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; margin-top: 1rem;">
           <div>
-            <h1 style="font-size: 2.5rem; color: var(--text-dark);">Inventory</h1>
-            <p style="color: var(--text-light);">Dashboard > Inventory</p>
+            <h1 style="font-size: 2.5rem; color: var(--text-dark); margin: 0;">Global Inventory</h1>
+            <p style="color: var(--text-light); margin-top: 0.5rem;">System Management > Inventory</p>
           </div>
-          <button class="flash-btn" onclick="hideModal('globalInventoryPage'); showModal('addModal')">+ Add Item</button>
+          <button class="flash-btn" onclick="showModal('addModal')">+ Add New Item</button>
         </div>
-        <div id="global-inventory-table-container" class="admin-table-wrapper">
-          <!-- Table dynamic -->
-        </div>
+        <div id="global-inventory-table-container" class="admin-table-wrapper"></div>
       </div>
-    </div>
+    </section>
 
-    <div id="manageApartmentsPage" class="modal">
-      <div class="modal-content" style="max-width: 95%; width: 1200px; padding: 3rem;">
-        <span class="close" onclick="hideModal('manageApartmentsPage')">&times;</span>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <section id="manageApartmentsPage" class="admin-full-page" style="display: none;">
+      <div style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+        <button class="back-btn" onclick="showAdminDashboard()">← Back to Dashboard</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; margin-top: 1rem;">
           <div>
-            <h1 style="font-size: 2.5rem; color: var(--text-dark);">Apartments</h1>
-            <p style="color: var(--text-light);">Dashboard > Apartments</p>
+            <h1 style="font-size: 2.5rem; color: var(--text-dark); margin: 0;">Apartment Units</h1>
+            <p style="color: var(--text-light); margin-top: 0.5rem;">System Management > Apartments</p>
           </div>
-          <button class="flash-btn" onclick="hideModal('manageApartmentsPage'); showModal('addModal')">+ Add Apartment</button>
+          <button class="flash-btn" onclick="showModal('addModal')">+ Add Apartment</button>
         </div>
-        <div id="apartments-table-container" class="admin-table-wrapper">
-          <!-- Table dynamic -->
-        </div>
+        <div id="apartments-table-container" class="admin-table-wrapper"></div>
       </div>
-    </div>
+    </section>
 
     <style>
+      .admin-full-page {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #f8f9fa;
+        z-index: 999;
+        overflow-y: auto;
+        padding-top: 80px; /* Offset for nav */
+      }
+      .back-btn {
+        background: transparent;
+        border: none;
+        color: var(--teal-main);
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        transition: 0.2s;
+      }
+      .back-btn:hover {
+        transform: translateX(-5px);
+      }
       .admin-table-wrapper {
         background: #fff;
         border-radius: 15px;
