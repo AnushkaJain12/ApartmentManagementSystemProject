@@ -4,6 +4,8 @@ const API_URL = '/api';
 const apartmentGrid = document.getElementById('apartment-grid');
 const searchInput = document.getElementById('search-input');
 let allApartments = [];
+let currentMode = 'guest'; // default mode
+let submittedInquiries = []; // store inquiries
 
 // Scroll Effect for Navbar
 window.addEventListener('scroll', () => {
@@ -38,6 +40,8 @@ window.addEventListener('scroll', () => {
 
 // Load Data
 document.addEventListener('DOMContentLoaded', () => {
+    // Show dashboard initially and prevent scrolling
+    showDashboard();
     fetchApartments();
 
     // Mobile Menu Toggle
@@ -94,7 +98,7 @@ function renderApartments(apartments) {
                     `).join('')}
                 </div>
 
-                ${apt.status === 'Occupied' ? `
+                ${(currentMode === 'admin' && apt.status === 'Occupied') ? `
                     <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
                         <p style="font-size: 0.75rem; color: var(--text-light);">ALLOTTED TO</p>
                         <strong style="color: var(--teal-main);">${apt.occupantName}</strong>
@@ -102,11 +106,13 @@ function renderApartments(apartments) {
                 ` : ''}
 
                 <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn-teal" style="flex: 1.5; padding: 0.6rem; font-size: 0.8rem;" onclick="openAllotModal('${apt._id}', '${apt.occupantName}', '${apt.status}', '${apt.allotmentDate}')">MANAGE</button>
-                    <button class="btn-teal" style="flex: 1; padding: 0.6rem; font-size: 0.8rem; background: var(--teal-dark);" onclick="openInventoryModal('${apt._id}', '${apt.apartmentNumber}')">ITEMS</button>
-                    <button style="border: 1px solid #ddd; background: transparent; padding: 0.6rem; border-radius: 4px; cursor: pointer;" onclick="deleteApartment('${apt._id}')">
-                        <img src="https://img.icons8.com/ios/50/ff4757/delete-forever.png" width="18"/>
-                    </button>
+                    ${currentMode === 'admin' ? `
+                        <button class="btn-teal" style="flex: 1.5; padding: 0.6rem; font-size: 0.8rem;" onclick="openAllotModal('${apt._id}', '${apt.occupantName || ''}', '${apt.status}', '${apt.allotmentDate || ''}')">MANAGE</button>
+                        <button class="btn-teal" style="flex: 1; padding: 0.6rem; font-size: 0.8rem; background: var(--teal-dark);" onclick="openInventoryModal('${apt._id}', '${apt.apartmentNumber}')">ITEMS</button>
+                        <button style="border: 1px solid #ddd; background: transparent; padding: 0.6rem; border-radius: 4px; cursor: pointer;" onclick="deleteApartment('${apt._id}')">
+                            <img src="https://img.icons8.com/ios/50/ff4757/delete-forever.png" width="18"/>
+                        </button>
+                    ` : ''}
                 </div>
             </div>
         </div>
@@ -120,10 +126,74 @@ function filterByBlock(blockName) {
     document.getElementById('inventory').scrollIntoView({ behavior: 'smooth' });
 }
 
+function filterByStatus(status) {
+    const filtered = allApartments.filter(apt => apt.status === status);
+    renderApartments(filtered);
+    document.getElementById('inventory').scrollIntoView({ behavior: 'smooth' });
+}
+
 function showAllApartments() {
     renderApartments(allApartments);
     document.getElementById('inventory').scrollIntoView({ behavior: 'smooth' });
 }
+
+// Mode Selector Logic
+function changeMode(mode) {
+    currentMode = mode;
+    const addBtn = document.getElementById('add-unit-btn');
+    const availableFilterBtn = document.getElementById('available-filter-btn');
+    const inquiriesBtn = document.getElementById('inquiries-btn');
+    const inquiryBtn = document.getElementById('floating-inquiry-btn');
+    
+    if (mode === 'admin') {
+        addBtn.style.display = 'block';
+        inquiriesBtn.style.display = 'block';
+        inquiryBtn.style.display = 'none';
+    } else {
+        addBtn.style.display = 'none';
+        inquiriesBtn.style.display = 'none';
+        inquiryBtn.style.display = 'flex'; // show floating inquiry button
+    }
+    
+    // Re-render apartments to show/hide admin buttons
+    renderApartments(allApartments);
+}
+
+// Dashboard & Login Logic
+function showDashboard() {
+    document.getElementById('dashboard-overlay').style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // prevent scrolling behind
+}
+
+function selectRole(role) {
+    changeMode(role);
+    document.getElementById('dashboard-overlay').style.display = 'none';
+    document.body.style.overflow = 'auto'; // restore scrolling
+}
+
+function openLoginModal(role) {
+    document.getElementById('login-role').value = role;
+    document.getElementById('login-title').innerText = role === 'admin' ? 'Admin Login' : 'User Login';
+    document.getElementById('login-error').style.display = 'none';
+    document.getElementById('login-form').reset();
+    showModal('loginModal');
+}
+
+document.getElementById('login-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const role = document.getElementById('login-role').value;
+    const user = document.getElementById('login-username').value;
+    const pass = document.getElementById('login-password').value;
+    
+    // Simple mock authentication
+    if ((role === 'admin' && user === 'admin' && pass === 'admin') ||
+        (role === 'user' && user === 'user' && pass === 'user')) {
+        hideModal('loginModal');
+        selectRole(role);
+    } else {
+        document.getElementById('login-error').style.display = 'block';
+    }
+});
 
 // Search Logic
 searchInput.addEventListener('input', (e) => {
@@ -161,11 +231,11 @@ function hideModal(id) {
 
 function openAllotModal(id, name, status, date) {
     document.getElementById('edit-id').value = id;
-    document.getElementById('edit-name').value = name || '';
+    document.getElementById('edit-name').value = name && name !== 'undefined' ? name : '';
     document.getElementById('edit-status').value = status;
     
     // Format date for input type="date" (YYYY-MM-DD)
-    if (date && date !== 'null') {
+    if (date && date !== 'null' && date !== 'undefined') {
         const d = new Date(date);
         const formatted = d.toISOString().split('T')[0];
         document.getElementById('edit-allot-date').value = formatted;
@@ -174,6 +244,14 @@ function openAllotModal(id, name, status, date) {
     }
     
     showModal('allotModal');
+}
+
+function openSidebar() {
+    document.getElementById('inquiry-sidebar').classList.add('open');
+}
+
+function closeSidebar() {
+    document.getElementById('inquiry-sidebar').classList.remove('open');
 }
 
 // Inventory Logic
@@ -404,4 +482,47 @@ async function deleteApartment(id) {
     if (!confirm('Delete this unit?')) return;
     await fetch(`${API_URL}/apartments/${id}`, { method: 'DELETE' });
     fetchApartments();
+}
+
+document.getElementById('inquiry-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    // Simulate sending inquiry to admin
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    data.date = new Date().toLocaleString();
+    submittedInquiries.push(data);
+    
+    console.log("Inquiry sent to Admin:", data);
+    alert('Thank you! Your inquiry has been sent to the Admin. You will receive a reply at ' + data.email);
+    
+    closeSidebar();
+    e.target.reset();
+});
+
+function openAdminInquiries() {
+    const list = document.getElementById('admin-inquiries-list');
+    
+    if (submittedInquiries.length === 0) {
+        list.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No inquiries received yet.</p>';
+    } else {
+        list.innerHTML = submittedInquiries.map(inq => `
+            <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--teal-main);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <strong style="color: var(--teal-main); font-size: 1.1rem;">${inq.name}</strong>
+                    <span style="font-size: 0.8rem; color: #999;">${inq.date}</span>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.5rem;">
+                    <strong>Email:</strong> <a href="mailto:${inq.email}" style="color: var(--flash-teal); text-decoration: none;">${inq.email}</a><br>
+                    ${inq.phone ? `<strong>Phone:</strong> ${inq.phone}<br>` : ''}
+                    ${inq.apartment ? `<strong>Apartment Interest:</strong> ${inq.apartment}` : ''}
+                </p>
+                <div style="background: #fff; padding: 1rem; border-radius: 5px; border: 1px solid #eee; margin-top: 1rem;">
+                    <p style="font-size: 0.9rem; line-height: 1.5;">${inq.message}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    showModal('adminInquiriesModal');
 }

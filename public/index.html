@@ -13,6 +13,58 @@
     />
   </head>
   <body>
+    <!-- Dashboard Overlay -->
+    <div id="dashboard-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray-bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <h1 style="color: var(--teal-main); margin-bottom: 0.5rem; font-size: 2.5rem;">LNMIIT Housing Portal</h1>
+      <p style="color: var(--text-light); margin-bottom: 3rem; letter-spacing: 1px;">SELECT YOUR ROLE TO CONTINUE</p>
+      
+      <div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; max-width: 900px; width: 90%;">
+        
+        <!-- Admin Card -->
+        <div class="role-card" onclick="openLoginModal('admin')" style="background: #fff; padding: 3rem 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; cursor: pointer; transition: 0.3s; flex: 1; min-width: 250px; border: 2px solid transparent;">
+          <img src="https://img.icons8.com/ios/100/008080/admin-settings-male.png" style="margin-bottom: 1.5rem;" />
+          <h2 style="color: var(--teal-main); margin-bottom: 0.5rem;">Admin</h2>
+          <p style="font-size: 0.85rem; color: var(--text-light);">Manage apartments, inventory, and user allotments.</p>
+        </div>
+
+        <!-- User Card -->
+        <div class="role-card" onclick="openLoginModal('user')" style="background: #fff; padding: 3rem 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; cursor: pointer; transition: 0.3s; flex: 1; min-width: 250px; border: 2px solid transparent;">
+          <img src="https://img.icons8.com/ios/100/008080/user--v1.png" style="margin-bottom: 1.5rem;" />
+          <h2 style="color: var(--teal-main); margin-bottom: 0.5rem;">User</h2>
+          <p style="font-size: 0.85rem; color: var(--text-light);">Log in to view your current allotments and status.</p>
+        </div>
+
+        <!-- Guest Card -->
+        <div class="role-card" onclick="selectRole('guest')" style="background: #fff; padding: 3rem 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; cursor: pointer; transition: 0.3s; flex: 1; min-width: 250px; border: 2px solid transparent;">
+          <img src="https://img.icons8.com/ios/100/008080/guest-male.png" style="margin-bottom: 1.5rem;" />
+          <h2 style="color: var(--teal-main); margin-bottom: 0.5rem;">Guest</h2>
+          <p style="font-size: 0.85rem; color: var(--text-light);">Browse available apartments and send inquiries.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" style="z-index: 10000;">
+      <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <span class="close" onclick="hideModal('loginModal')">&times;</span>
+        <h2 id="login-title" style="color: var(--teal-main); margin-bottom: 1rem;">Login</h2>
+        <p style="color: var(--text-light); font-size: 0.8rem; margin-bottom: 2rem;">Please enter your credentials to continue.</p>
+        <form id="login-form">
+          <input type="hidden" id="login-role" />
+          <div class="form-group" style="text-align: left;">
+            <label>Username</label>
+            <input type="text" id="login-username" required placeholder="admin / user" />
+          </div>
+          <div class="form-group" style="text-align: left;">
+            <label>Password</label>
+            <input type="password" id="login-password" required placeholder="admin / user" />
+          </div>
+          <p id="login-error" style="color: #ff4757; font-size: 0.8rem; display: none; margin-bottom: 1rem;">Invalid credentials. Please try again.</p>
+          <button type="submit" class="btn-submit">Login</button>
+        </form>
+      </div>
+    </div>
+
     <!-- Navigation Bar -->
     <nav class="glass-nav">
       <div class="logo">LNMIIT<span>HOUSING</span></div>
@@ -22,7 +74,13 @@
         <li><a href="#inventory">Apartments</a></li>
       </ul>
       <div class="nav-actions">
-        <button class="flash-btn" onclick="showModal('addModal')">
+        <button class="flash-btn" onclick="showDashboard()" style="margin-right: 15px;">
+          CHANGE ROLE
+        </button>
+        <button class="flash-btn admin-only" id="inquiries-btn" onclick="openAdminInquiries()" style="display: none; margin-right: 15px; background: var(--teal-dark);">
+          INQUIRIES
+        </button>
+        <button class="flash-btn admin-only" id="add-unit-btn" onclick="showModal('addModal')" style="display: none;">
           ADD UNIT
         </button>
         <div class="menu-toggle" id="mobile-menu">
@@ -66,12 +124,24 @@
     </header>
 
     <!-- Category Icons -->
-    <section class="categories">
+    <section class="categories" style="flex-wrap: wrap;">
       <div class="cat-item" onclick="showAllApartments()">
         <div class="cat-icon">
           <img src="https://img.icons8.com/ios/50/008080/checklist.png" />
         </div>
         <p>Show All</p>
+      </div>
+      <div class="cat-item filter-btn" onclick="filterByStatus('Available')" id="available-filter-btn">
+        <div class="cat-icon">
+          <img src="https://img.icons8.com/ios/50/008080/ok.png" />
+        </div>
+        <p>Available</p>
+      </div>
+      <div class="cat-item filter-btn" onclick="filterByStatus('Occupied')" id="occupied-filter-btn">
+        <div class="cat-icon">
+          <img src="https://img.icons8.com/ios/50/008080/cancel.png" />
+        </div>
+        <p>Occupied</p>
       </div>
       <div class="cat-item" onclick="filterByBlock('Professor Housing')">
         <div class="cat-icon">
@@ -434,25 +504,58 @@
       </div>
     </div>
 
-    <footer class="teal-footer">
-      <div class="footer-grid">
-        <div class="footer-info">
-          <h3>LNMIIT Housing</h3>
-          <p>
-            Gram - Rupa Ki Nangal, Post - Sumel, Via - Jamdoli, Jaipur-302031
-          </p>
-        </div>
-        <div class="footer-links">
-          <p>Follow Us</p>
-          <div class="socials">
-            <!-- Icons -->
+    <!-- Floating Inquiry Button -->
+    <button id="floating-inquiry-btn" class="floating-btn" onclick="openSidebar()" style="display: none;">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/chat.png" width="24" />
+      <span>INQUIRY</span>
+    </button>
+
+    <!-- Inquiry Sidebar -->
+    <div id="inquiry-sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <h2>Send Inquiry</h2>
+        <span class="close-sidebar" onclick="closeSidebar()">&times;</span>
+      </div>
+      <div class="sidebar-content">
+        <p style="color: var(--text-light); margin-bottom: 1.5rem; font-size: 0.9rem;">Have questions about an apartment or allotment process? Message us below.</p>
+        <form id="inquiry-form">
+          <div class="form-group">
+            <label>Apartment (Optional)</label>
+            <input type="text" name="apartment" placeholder="e.g. Unit 12, Professor Housing" />
           </div>
-        </div>
-        <div class="footer-map-mini">
-          <img src="Images/campusMap.png" width="100" />
+          <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" name="name" required placeholder="Enter your full name" />
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" name="email" required placeholder="To receive replies from admin" />
+          </div>
+          <div class="form-group">
+            <label>Phone Number (Optional)</label>
+            <input type="tel" name="phone" placeholder="Enter contact number" />
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea name="message" rows="4" required placeholder="Type your message here..."></textarea>
+          </div>
+          <button type="submit" class="btn-submit">Send Message</button>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- Admin Inquiries Modal -->
+    <div id="adminInquiriesModal" class="modal">
+      <div class="modal-content" style="max-width: 700px;">
+        <span class="close" onclick="hideModal('adminInquiriesModal')">&times;</span>
+        <h2>Guest & User Inquiries</h2>
+        <p style="color: var(--text-light); margin-bottom: 2rem;">Manage inquiries sent via the Inquiry Sidebar.</p>
+        <div id="admin-inquiries-list" style="max-height: 400px; overflow-y: auto;">
+          <!-- Dynamic Inquiries -->
         </div>
       </div>
-    </footer>
+    </div>
 
     <script src="js/main.js"></script>
   </body>
