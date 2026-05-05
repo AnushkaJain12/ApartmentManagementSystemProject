@@ -290,9 +290,9 @@ async function refreshAdminDashboard() {
                     <td>${a.type}</td>
                     <td>${a.block}</td>
                     <td>
-                        <span style="background: ${a.status === 'Occupied' ? '#e6f7ef' : '#fff1f0'}; color: ${a.status === 'Occupied' ? '#27ae60' : '#ff4757'}; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600;">
-                            ${a.status}
-                        </span>
+                        <span style="color: ${a.status === 'Occupied' ? '#27ae60' : '#ff4757'}; font-size: 0.75rem; font-weight: 700;">
+                        ${a.status.toUpperCase()}
+                    </span>
                     </td>
                     <td style="color: #666;">${a.occupantName || '—'}</td>
                 </tr>
@@ -998,10 +998,12 @@ function saveFacilities() {
 
 // Management Pages Logic
 async function openTenantsPage() {
+    hideAllAdminPages();
+    document.getElementById('tenantsPage').style.display = 'block';
     const res = await fetch(`${API_URL}/faculty`);
     const faculties = await res.json();
-    
     const container = document.getElementById('tenants-table-container');
+    
     container.innerHTML = `
         <table class="admin-table">
             <thead>
@@ -1010,24 +1012,19 @@ async function openTenantsPage() {
                     <th>Name</th>
                     <th>Role</th>
                     <th>Department</th>
-                    <th>First Login</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
                 ${faculties.map(f => `
                     <tr>
                         <td style="font-weight: 700;">${f.facultyId}</td>
-                        <td style="display: flex; align-items: center; gap: 1rem;">
-                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                                <img src="https://img.icons8.com/ios-filled/50/999/user-male-circle.png" width="30"/>
-                            </div>
-                            <strong>${f.name}</strong>
-                        </td>
+                        <td>${f.name}</td>
                         <td>${f.role}</td>
                         <td>${f.department}</td>
                         <td>
-                            <span style="color: ${f.firstLogin ? '#ff9f43' : '#27ae60'}; font-weight: 600;">
-                                ${f.firstLogin ? 'Pending' : 'Completed'}
+                            <span style="color: #27ae60; font-size: 0.75rem; font-weight: 700;">
+                                ACTIVE
                             </span>
                         </td>
                     </tr>
@@ -1035,96 +1032,100 @@ async function openTenantsPage() {
             </tbody>
         </table>
     `;
-    showModal('tenantsPage');
 }
 
 async function openGlobalInventory() {
+    hideAllAdminPages();
+    document.getElementById('globalInventoryPage').style.display = 'block';
     const res = await fetch(`${API_URL}/inventory`);
     const items = await res.json();
-    
     const container = document.getElementById('global-inventory-table-container');
+    
     container.innerHTML = `
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>Apartment</th>
                     <th>Item Name</th>
                     <th>Quantity</th>
                     <th>Condition</th>
-                    <th style="text-align: right;">Actions</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                ${items.map(item => `
+                ${items.map(i => `
                     <tr>
-                        <td>Unit ${item.apartmentId ? item.apartmentId.apartmentNumber : 'N/A'}</td>
-                        <td style="font-weight: 600;">${item.itemName}</td>
-                        <td>${item.quantity}</td>
+                        <td style="font-weight: 600;">${i.itemName}</td>
+                        <td>${i.quantity}</td>
                         <td>
-                            <span style="background: ${item.condition === 'Good' ? '#e6f7ef' : '#fff1f0'}; color: ${item.condition === 'Good' ? '#27ae60' : '#ff4757'}; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">
-                                ${item.condition}
+                            <span style="color: ${i.condition === 'Good' ? '#27ae60' : '#ff4757'}; font-size: 0.75rem; font-weight: 700;">
+                                ${i.condition.toUpperCase()}
                             </span>
                         </td>
                         <td>
-                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                <button class="action-icon-btn" onclick="editItem('${item._id}', '${item.itemName}', ${item.quantity}, '${item.condition}', '${item.apartmentId ? item.apartmentId._id : ''}'); hideModal('globalInventoryPage');">
-                                    <img src="https://img.icons8.com/ios/50/008080/edit.png" width="18"/>
-                                </button>
-                                <button class="action-icon-btn" onclick="deleteItem('${item._id}', '${item.apartmentId ? item.apartmentId._id : ''}'); hideModal('globalInventoryPage');">
-                                    <img src="https://img.icons8.com/ios/50/ff4757/delete-forever.png" width="18"/>
-                                </button>
-                            </div>
+                            <button class="action-icon-btn" onclick="editItem('${i._id}', '${i.itemName}', '${i.quantity}', '${i.condition}')">
+                                <img src="https://img.icons8.com/ios-glyphs/24/008080/edit.png" width="18"/>
+                            </button>
                         </td>
                     </tr>
                 `).join('')}
             </tbody>
         </table>
     `;
-    showModal('globalInventoryPage');
 }
 
 async function openManageApartments() {
+    hideAllAdminPages();
+    document.getElementById('manageApartmentsPage').style.display = 'block';
     const res = await fetch(`${API_URL}/apartments`);
-    const all = await res.json();
-    
+    const apartments = await res.json();
     const container = document.getElementById('apartments-table-container');
+    
     container.innerHTML = `
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>Apartment ID</th>
+                    <th>Unit No.</th>
+                    <th>Block</th>
                     <th>Type</th>
-                    <th>Capacity</th>
                     <th>Status</th>
-                    <th style="text-align: right;">Actions</th>
+                    <th>Occupant</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                ${all.map(a => `
+                ${apartments.map(a => `
                     <tr>
                         <td style="font-weight: 700;">Unit ${a.apartmentNumber}</td>
+                        <td>${a.block}</td>
                         <td>${a.type}</td>
-                        <td>${a.capacity} People</td>
                         <td>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div style="width: 8px; height: 8px; border-radius: 50%; background: ${a.status === 'Occupied' ? '#27ae60' : (a.status === 'Maintenance' ? '#f1c40f' : '#ff9f43')};"></div>
-                                <span style="color: ${a.status === 'Occupied' ? '#27ae60' : (a.status === 'Maintenance' ? '#f1c40f' : '#ff9f43')}; font-weight: 600;">${a.status}</span>
-                            </div>
+                            <span style="color: ${a.status === 'Occupied' ? '#27ae60' : '#ff4757'}; font-size: 0.75rem; font-weight: 700;">
+                                ${a.status.toUpperCase()}
+                            </span>
                         </td>
-                        <td>
-                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                <button class="action-icon-btn" onclick="openAllotModal('${a._id}', '${a.occupantName || ''}', '${a.status}', '${a.allotmentDate || ''}', '${a.facultyId || ''}'); hideModal('manageApartmentsPage');">
-                                    <img src="https://img.icons8.com/ios/50/008080/edit.png" width="18"/>
-                                </button>
-                                <button class="action-icon-btn" onclick="deleteApartment('${a._id}'); hideModal('manageApartmentsPage');">
-                                    <img src="https://img.icons8.com/ios/50/ff4757/delete-forever.png" width="18"/>
-                                </button>
-                            </div>
+                        <td>${a.occupantName || '—'}</td>
+                        <td style="display: flex; gap: 0.5rem;">
+                            <button class="action-icon-btn" title="Manage Allotment" onclick="openAllotModal('${a._id}', '${a.apartmentNumber}', '${a.occupantName || ''}', '${a.facultyId || ''}', '${a.status}', '${(a.allotmentDate || '').split('T')[0]}')">
+                                <img src="https://img.icons8.com/ios-glyphs/24/008080/key.png" width="18"/>
+                            </button>
                         </td>
                     </tr>
                 `).join('')}
             </tbody>
         </table>
     `;
-    showModal('manageApartmentsPage');
+}
+
+function hideAllAdminPages() {
+    const pages = ['tenantsPage', 'globalInventoryPage', 'manageApartmentsPage', 'admin-dashboard', 'campus-map-section'];
+    pages.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+}
+
+function showAdminDashboard() {
+    hideAllAdminPages();
+    document.getElementById('admin-dashboard').style.display = 'block';
+    refreshAdminDashboard();
 }

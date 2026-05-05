@@ -289,18 +289,18 @@ body {
 
 .status-label {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    padding: 0.4rem 1rem;
-    border-radius: 50px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: #fff;
+    top: 15px;
+    right: 15px;
+    padding: 0;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.status-Available { background: var(--flash-teal); }
-.status-Occupied { background: #ff4757; }
-.status-Maintenance { background: #ffa502; }
+.status-Occupied { color: #27ae60; }
+.status-Available { color: #ff4757; }
+.status-Maintenance { color: #f1c40f; }
 
 /* Modals */
 .modal {
