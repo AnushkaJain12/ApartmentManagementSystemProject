@@ -213,6 +213,7 @@ function changeMode(mode) {
         if (myAptSection) myAptSection.style.display = 'none';
         
         refreshAdminDashboard();
+        fetchActivities();
     } else if (mode === 'user') {
         if (adminDashboard) adminDashboard.style.display = 'none';
         if (mapSection) mapSection.style.display = 'block';
@@ -300,6 +301,70 @@ async function refreshAdminDashboard() {
     } catch (err) {
         console.error('Error refreshing dashboard:', err);
     }
+}
+
+async function fetchActivities() {
+    try {
+        const res = await fetch(`${API_URL}/activities`);
+        const activities = await res.json();
+        renderActivities(activities);
+    } catch (err) {
+        console.error('Error fetching activities:', err);
+    }
+}
+
+function renderActivities(activities) {
+    const dashboardList = document.getElementById('activities-list');
+    const modalList = document.getElementById('full-activities-list');
+    
+    if (!dashboardList) return;
+
+    const html = activities.length === 0 
+        ? '<p style="color: #999; font-size: 0.85rem; text-align: center;">No recent activities.</p>'
+        : activities.map(act => `
+            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                <div style="background: ${act.color}15; padding: 0.5rem; border-radius: 50%; display: flex;">
+                    <img src="${act.icon}" width="20" height="20" />
+                </div>
+                <div>
+                    <p style="font-size: 0.85rem; margin: 0; color: #333;">${act.description}</p>
+                    <span style="font-size: 0.75rem; color: #999;">${formatRelativeTime(new Date(act.createdAt))}</span>
+                </div>
+            </div>
+        `).join('');
+
+    dashboardList.innerHTML = activities.length === 0 
+        ? html 
+        : activities.slice(0, 5).map(act => `
+            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                <div style="background: ${act.color}15; padding: 0.5rem; border-radius: 50%; display: flex;">
+                    <img src="${act.icon}" width="20" height="20" />
+                </div>
+                <div>
+                    <p style="font-size: 0.85rem; margin: 0; color: #333;">${act.description}</p>
+                    <span style="font-size: 0.75rem; color: #999;">${formatRelativeTime(new Date(act.createdAt))}</span>
+                </div>
+            </div>
+        `).join('');
+
+    if (modalList) {
+        modalList.innerHTML = html;
+    }
+}
+
+function openActivitiesModal() {
+    showModal('activitiesModal');
+    fetchActivities(); // Refresh
+}
+
+function formatRelativeTime(date) {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} mins ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    return date.toLocaleDateString();
 }
 
 async function renderMyApartment() {
@@ -515,6 +580,7 @@ document.getElementById('add-faculty-form').addEventListener('submit', async (e)
             alert('Faculty account created successfully!');
             hideModal('addFacultyModal');
             openTenantsPage(); // Refresh table
+            fetchActivities(); // Refresh activities
         } else {
             const err = await res.json();
             alert(err.message);
@@ -712,6 +778,10 @@ document.getElementById('add-apartment-form').addEventListener('submit', async (
         if (res.ok) {
             hideModal('addModal');
             fetchApartments();
+            fetchActivities(); // Refresh activities
+        } else {
+            const errData = await res.json();
+            alert('Failed to add apartment: ' + (errData.message || 'Unknown error'));
         }
     } catch (err) {
         alert('Error adding apartment');
@@ -755,6 +825,7 @@ document.getElementById('allot-form').addEventListener('submit', async (e) => {
         if (res.ok) {
             hideModal('allotModal');
             fetchApartments();
+            fetchActivities(); // Refresh activities
         }
     } catch (err) {
         alert('Error updating allotment');

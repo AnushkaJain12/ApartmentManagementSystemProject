@@ -7,6 +7,7 @@ require('dotenv').config();
 const Apartment = require('./models/Apartment');
 const Inventory = require('./models/Inventory');
 const Faculty = require('./models/Faculty');
+const Activity = require('./models/Activity');
 const bcrypt = require('bcryptjs');
 
 const app = express();
@@ -26,8 +27,28 @@ app.get(['/', '/admin'], (req, res) => {
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('Connected to MongoDB'))
+    .then(() => {
+        console.log('Connected to MongoDB');
+        // Drop problematic leftover index if it exists
+        mongoose.connection.db.collection('apartments').dropIndex('unitId_1')
+            .then(() => console.log('Dropped unitId_1 index'))
+            .catch(err => {
+                if (err.code !== 27) { // IndexNotFound error code
+                    console.error('Error dropping index:', err.message);
+                }
+            });
+    })
     .catch(err => console.error('MongoDB connection error:', err));
+
+// Helper for logging activity
+async function logActivity(type, description, color = '#3498db', icon = 'https://img.icons8.com/ios-filled/50/3498db/activity.png') {
+    try {
+        const activity = new Activity({ type, description, color, icon });
+        await activity.save();
+    } catch (err) {
+        console.error('Error logging activity:', err);
+    }
+}
 
 // Authentication Routes
 app.post('/api/login', async (req, res) => {
@@ -85,6 +106,7 @@ app.post('/api/faculty', async (req, res) => {
         });
 
         await newFaculty.save();
+        await logActivity('Faculty Registration', `New faculty registered: ${name}`, '#27ae60', 'https://img.icons8.com/ios-filled/50/27ae60/add-user-group-man-man.png');
         res.status(201).json(newFaculty);
     } catch (err) {
         res.status(400).json({ message: err.message });
@@ -135,6 +157,7 @@ app.post('/api/apartments', async (req, res) => {
         
         const apartment = new Apartment(req.body);
         const newApartment = await apartment.save();
+        await logActivity('Unit Registration', `New unit registered: Unit ${apartmentNumber} (${req.body.block})`, '#f39c12', 'https://img.icons8.com/ios-filled/50/f39c12/home.png');
         res.status(201).json(newApartment);
     } catch (err) {
         res.status(400).json({ message: err.message });
@@ -172,7 +195,6 @@ app.patch('/api/apartments/:id', async (req, res) => {
             if (role === 'Professor' && block === 'Professor Housing') isEligible = true;
             else if (role === 'Associate Professor' && block === 'Associate Professor Housing') isEligible = true;
             else if (role === 'Assistant Professor' && block === 'Assistant Professor Housing') isEligible = true;
-            else if (role === 'Warden' && block === 'Director House') isEligible = true;
             else if (role === 'Staff' && (block === 'Grade 3 Housing' || block === 'Grade 4 Housing')) isEligible = true;
             else if (role === 'Other') isEligible = true; // Flexibility for 'Other' role
 
@@ -203,6 +225,11 @@ app.patch('/api/apartments/:id', async (req, res) => {
         }
 
         const updatedApartment = await Apartment.findByIdAndUpdate(apartmentId, req.body, { new: true });
+        
+        if (status === 'Occupied') {
+            await logActivity('Unit Allotment', `Unit ${updatedApartment.apartmentNumber} (${updatedApartment.block}) Allotted to ${updatedApartment.occupantName}`, '#3498db', 'https://img.icons8.com/ios-filled/50/3498db/home.png');
+        }
+
         res.json(updatedApartment);
     } catch (err) {
         res.status(400).json({ message: err.message });
@@ -274,6 +301,16 @@ app.get('/api/stats', async (req, res) => {
         const occupied = await Apartment.countDocuments({ status: 'Occupied' });
         const maintenance = await Apartment.countDocuments({ status: 'Maintenance' });
         res.json({ total, available, occupied, maintenance });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Activities Route
+app.get('/api/activities', async (req, res) => {
+    try {
+        const activities = await Activity.find().sort({ createdAt: -1 });
+        res.json(activities);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

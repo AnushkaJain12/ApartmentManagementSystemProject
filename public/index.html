@@ -218,7 +218,7 @@
         <div class="card" style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
             <h3 style="color: #333; margin: 0;">Recent Activities</h3>
-            <a href="#" style="color: var(--teal-main); font-size: 0.85rem; font-weight: 600; text-decoration: none;">View all</a>
+            <button onclick="openActivitiesModal()" style="background: transparent; border: none; color: var(--teal-main); font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: none;">View all</button>
           </div>
           <div id="activities-list" style="display: flex; flex-direction: column; gap: 1.2rem;">
             <!-- Dummy activity entries -->
@@ -381,7 +381,6 @@
               <option value="Assistant Professor Housing">
                 Assistant Professor Housing
               </option>
-              <option value="Director House">Director House</option>
               <option value="Grade 3 Housing">Grade 3 Housing</option>
               <option value="Grade 4 Housing">Grade 4 Housing</option>
             </select>
@@ -875,6 +874,17 @@
           <p style="font-size: 0.75rem; color: #999; margin-bottom: 1rem;">Default password will be <strong>FacultyID@123</strong></p>
           <button type="submit" class="btn-teal" style="width: 100%;">Create Account</button>
         </form>
+      </div>
+    </div>
+
+    <!-- Activities Modal -->
+    <div id="activitiesModal" class="modal">
+      <div class="modal-content" style="max-width: 700px; padding: 2.5rem;">
+        <span class="close" onclick="hideModal('activitiesModal')">&times;</span>
+        <h2 style="color: var(--teal-dark); margin-bottom: 1.5rem;">All Activities</h2>
+        <div id="full-activities-list" style="display: flex; flex-direction: column; gap: 1.2rem; max-height: 70vh; overflow-y: auto; padding-right: 10px;">
+          <!-- Dynamically populated -->
+        </div>
       </div>
     </div>
 
