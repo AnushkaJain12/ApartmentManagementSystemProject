@@ -7,7 +7,7 @@ let allApartments = [];
 let currentMode = 'guest'; // default mode
 let currentUser = null; // store current logged in username
 let submittedInquiries = []; // store inquiries
-let facilitiesData = {}; // store facilities status per block
+let facilitiesData = JSON.parse(localStorage.getItem('facilitiesData')) || {}; // store facilities status per block
 
 // Scroll Effect for Navbar
 window.addEventListener('scroll', () => {
@@ -374,6 +374,10 @@ async function renderMyApartment() {
         return;
     }
 
+    // Ensure we have fresh data
+    const res = await fetch(`${API_URL}/apartments`);
+    allApartments = await res.json();
+
     // Find apartment where facultyId matches currentUser
     const myApt = allApartments.find(apt => 
         (apt.facultyId || '').toLowerCase() === currentUser.toLowerCase()
@@ -394,7 +398,8 @@ async function renderMyApartment() {
     const invRes = await fetch(`${API_URL}/inventory/${myApt._id}`);
     const inventory = await invRes.json();
     
-    // Get facilities for this block
+    // Get fresh facilities data from storage
+    facilitiesData = JSON.parse(localStorage.getItem('facilitiesData')) || {};
     const facilities = facilitiesData[myApt.block] || { water: 'Available', electricity: 'Available', internet: 'Available', parking: 'Available' };
 
     container.innerHTML = `
@@ -606,7 +611,6 @@ function closeAllModals() {
 function openAllotModal(id, name, status, date, facultyId) {
     document.getElementById('edit-id').value = id;
     document.getElementById('edit-faculty-id').value = facultyId && facultyId !== 'undefined' ? facultyId : '';
-    document.getElementById('edit-name').value = name && name !== 'undefined' ? name : '';
     document.getElementById('edit-status').value = status;
     
     // Format date for input type="date" (YYYY-MM-DD)
@@ -815,11 +819,19 @@ document.getElementById('edit-name').addEventListener('input', (e) => {
 });
 
 document.getElementById('edit-status').addEventListener('change', (e) => {
-    const nameInput = document.getElementById('edit-name');
+    const facultyIdInput = document.getElementById('edit-faculty-id');
     const dateInput = document.getElementById('edit-allot-date');
+    const facultyGroup = facultyIdInput.closest('.form-group');
+    const dateGroup = dateInput.closest('.form-group');
+
     if (e.target.value === 'Available' || e.target.value === 'Maintenance') {
-        nameInput.value = '';
+        facultyIdInput.value = '';
         dateInput.value = '';
+        facultyGroup.style.display = 'none';
+        dateGroup.style.display = 'none';
+    } else {
+        facultyGroup.style.display = 'block';
+        dateGroup.style.display = 'block';
     }
 });
 

@@ -204,8 +204,8 @@ app.patch('/api/apartments/:id', async (req, res) => {
                 });
             }
             
-            // Auto-fill name from faculty account if not provided
-            if (!req.body.occupantName) req.body.occupantName = faculty.name;
+            // Force name to match registered faculty account for consistency
+            req.body.occupantName = faculty.name;
         }
         
         // Archive to history if the occupant name is changing and the old one wasn't empty
