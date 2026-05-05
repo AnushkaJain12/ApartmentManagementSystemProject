@@ -1,306 +1,606 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LNMIIT | Staff Apartment Allotment</title>
-    <link rel="stylesheet" href="css/style.css">`
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-</head>
-<body>
-    
-    <nav class="glass-nav">
-        <div class="logo">LNMIIT<span>HOUSING</span></div>
-        <ul class="nav-links" id="nav-links">
-            <li><a href="#" class="active">Home</a></li>
-            <li><a href="#map-info">Campus Map</a></li>
-            <li><a href="#inventory">Apartments</a></li>
-        </ul>
-        <div class="nav-actions">
-            <button class="flash-btn" onclick="showModal('addModal')">ADD UNIT</button>
-            <div class="menu-toggle" id="mobile-menu">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:wght@700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Dashboard Overlay -->
+    <div id="dashboard-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray-bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <h1 style="color: var(--teal-main); margin-bottom: 0.5rem; font-size: 2.5rem;">LNMIIT Housing Portal</h1>
+      <p style="color: var(--text-light); margin-bottom: 3rem; letter-spacing: 1px;">SELECT YOUR ROLE TO CONTINUE</p>
+      
+      <div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; max-width: 900px; width: 90%;">
+        
+        <!-- Admin Card -->
+        <div class="role-card" onclick="openLoginModal('admin')" style="background: #fff; padding: 3rem 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; cursor: pointer; transition: 0.3s; flex: 1; min-width: 250px; border: 2px solid transparent;">
+          <img src="https://img.icons8.com/ios/100/008080/admin-settings-male.png" style="margin-bottom: 1.5rem;" />
+          <h2 style="color: var(--teal-main); margin-bottom: 0.5rem;">Admin</h2>
+          <p style="font-size: 0.85rem; color: var(--text-light);">Manage apartments, inventory, and user allotments.</p>
         </div>
+
+        <!-- User Card -->
+        <div class="role-card" onclick="openLoginModal('user')" style="background: #fff; padding: 3rem 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; cursor: pointer; transition: 0.3s; flex: 1; min-width: 250px; border: 2px solid transparent;">
+          <img src="https://img.icons8.com/ios/100/008080/user--v1.png" style="margin-bottom: 1.5rem;" />
+          <h2 style="color: var(--teal-main); margin-bottom: 0.5rem;">User</h2>
+          <p style="font-size: 0.85rem; color: var(--text-light);">Log in to view your current allotments and status.</p>
+        </div>
+
+        <!-- Guest Card -->
+        <div class="role-card" onclick="selectRole('guest')" style="background: #fff; padding: 3rem 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; cursor: pointer; transition: 0.3s; flex: 1; min-width: 250px; border: 2px solid transparent;">
+          <img src="https://img.icons8.com/ios/100/008080/guest-male.png" style="margin-bottom: 1.5rem;" />
+          <h2 style="color: var(--teal-main); margin-bottom: 0.5rem;">Guest</h2>
+          <p style="font-size: 0.85rem; color: var(--text-light);">Browse available apartments and send inquiries.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" style="z-index: 10000;">
+      <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <span class="close" onclick="hideModal('loginModal')">&times;</span>
+        <h2 id="login-title" style="color: var(--teal-main); margin-bottom: 1rem;">Login</h2>
+        <p style="color: var(--text-light); font-size: 0.8rem; margin-bottom: 2rem;">Please enter your credentials to continue.</p>
+        <form id="login-form">
+          <input type="hidden" id="login-role" />
+          <div class="form-group" style="text-align: left;">
+            <label>Username</label>
+            <input type="text" id="login-username" required placeholder="admin / user" />
+          </div>
+          <div class="form-group" style="text-align: left;">
+            <label>Password</label>
+            <input type="password" id="login-password" required placeholder="admin / user" />
+          </div>
+          <p id="login-error" style="color: #ff4757; font-size: 0.8rem; display: none; margin-bottom: 1rem;">Invalid credentials. Please try again.</p>
+          <button type="submit" class="btn-submit">Login</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="glass-nav">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="hamburger-icon" onclick="toggleHamburger()" style="cursor: pointer;">
+          <img src="https://img.icons8.com/ios-filled/50/ffffff/menu--v1.png" width="28" />
+        </div>
+        <div class="logo">LNMIIT<span>HOUSING</span></div>
+      </div>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#" class="active">Home</a></li>
+        <li><a href="#map-info">Campus Map</a></li>
+        <li><a href="#inventory">Apartments</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="flash-btn" onclick="showDashboard()" style="margin-right: 15px;">
+          CHANGE ROLE
+        </button>
+        <button class="flash-btn admin-only" id="add-unit-btn" onclick="showModal('addModal')" style="display: none;">
+          ADD UNIT
+        </button>
+        <div class="menu-toggle" id="mobile-menu">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
     </nav>
 
     <!-- Hero Section -->
     <header id="home" class="hero-new">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h3>CAMPUS RESIDENCY</h3>
-            <h1>LNMIIT Staff & Faculty <br>Apartment Allotment</h1>
-            <div class="search-bar">
-                <input type="text" placeholder="Search by Block or Apartment No..." id="search-input">
-                <button onclick="scrollToResults()"><img src="https://img.icons8.com/ios-filled/50/ffffff/search--v1.png" width="28"/></button>
-            </div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <h3>CAMPUS RESIDENCY</h3>
+        <h1>LNMIIT Staff & Faculty <br />Apartment Allotment</h1>
+        <div class="search-bar">
+          <input
+            type="text"
+            placeholder="Search by Block or Apartment No..."
+            id="search-input"
+          />
+          <button onclick="scrollToResults()">
+            <img
+              src="https://img.icons8.com/ios-filled/50/ffffff/search--v1.png"
+              width="28"
+            />
+          </button>
         </div>
-        <!-- Wave Divider -->
-        <div class="wave-container">
-            <svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
-                <path fill="#ffffff" fill-opacity="1" d="M0,192L48,197.3C96,203,192,213,288,192C384,171,480,117,576,117.3C672,117,768,171,864,197.3C960,224,1056,224,1152,197.3C1248,171,1344,117,1392,90.7L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-            </svg>
-        </div>
+      </div>
+      <!-- Wave Divider -->
+      <div class="wave-container">
+        <svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
+          <path
+            fill="#ffffff"
+            fill-opacity="1"
+            d="M0,192L48,197.3C96,203,192,213,288,192C384,171,480,117,576,117.3C672,117,768,171,864,197.3C960,224,1056,224,1152,197.3C1248,171,1344,117,1392,90.7L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          ></path>
+        </svg>
+      </div>
     </header>
 
     <!-- Category Icons -->
-    <section class="categories">
-        <div class="cat-item" onclick="showAllApartments()">
-            <div class="cat-icon"><img src="https://img.icons8.com/ios/50/008080/checklist.png"/></div>
-            <p>Show All</p>
+    <section class="categories" style="flex-wrap: wrap;">
+      <div class="cat-item" onclick="showAllApartments()">
+        <div class="cat-icon">
+          <img src="https://img.icons8.com/ios/50/008080/checklist.png" />
         </div>
-        <div class="cat-item" onclick="filterByBlock('Professor Housing')">
-            <div class="cat-icon"><img src="https://img.icons8.com/ios/50/008080/university.png"/></div>
-            <p>Professor</p>
+        <p>Show All</p>
+      </div>
+      <div class="cat-item" onclick="filterByBlock('Professor Housing')">
+        <div class="cat-icon">
+          <img src="https://img.icons8.com/ios/50/008080/university.png" />
         </div>
-        <div class="cat-item" onclick="filterByBlock('Associate Professor Housing')">
-            <div class="cat-icon"><img src="https://img.icons8.com/ios/50/008080/teacher.png"/></div>
-            <p>Associate Prof</p>
+        <p>Professor</p>
+      </div>
+      <div
+        class="cat-item"
+        onclick="filterByBlock('Associate Professor Housing')"
+      >
+        <div class="cat-icon">
+          <img src="https://img.icons8.com/ios/50/008080/teacher.png" />
         </div>
-        <div class="cat-item" onclick="filterByBlock('Assistant Professor Housing')">
-            <div class="cat-icon"><img src="https://img.icons8.com/ios/50/008080/student-registration.png"/></div>
-            <p>Assistant Prof</p>
+        <p>Associate Prof</p>
+      </div>
+      <div
+        class="cat-item"
+        onclick="filterByBlock('Assistant Professor Housing')"
+      >
+        <div class="cat-icon">
+          <img
+            src="https://img.icons8.com/ios/50/008080/student-registration.png"
+          />
         </div>
-        <div class="cat-item" onclick="filterByBlock('Grade 3 Housing')">
-            <div class="cat-icon"><img src="https://img.icons8.com/ios/50/008080/work.png"/></div>
-            <p>Grade 3 Staff</p>
+        <p>Assistant Prof</p>
+      </div>
+      <div class="cat-item" onclick="filterByBlock('Grade 3 Housing')">
+        <div class="cat-icon">
+          <img src="https://img.icons8.com/ios/50/008080/work.png" />
         </div>
-        <div class="cat-item" onclick="filterByBlock('Grade 4 Housing')">
-            <div class="cat-icon"><img src="https://img.icons8.com/ios/50/008080/maintenance.png"/></div>
-            <p>Grade 4 Staff</p>
+        <p>Grade 3 Staff</p>
+      </div>
+      <div class="cat-item" onclick="filterByBlock('Grade 4 Housing')">
+        <div class="cat-icon">
+          <img src="https://img.icons8.com/ios/50/008080/maintenance.png" />
         </div>
+        <p>Grade 4 Staff</p>
+      </div>
     </section>
 
     <!-- Map Section -->
     <section id="map-info" class="map-section">
-        <div class="map-container">
-            <div class="map-text">
-                <h2>Explore the Campus</h2>
-                <p class="subtitle">INTERACTIVE HOUSING MAP</p>
-                <div class="info-box">
-                    <p>Locate facilities, services, and key residency blocks at a glance. Our allotment system ensures priority based on grade and department.</p>
-                    <ul class="grade-list">
-                        <li><strong>Professor Housing:</strong> Premium 3BHK villas for Senior Faculty.</li>
-                        <li><strong>Associate Prof:</strong> Spacious 2BHK/3BHK units in Block 10.</li>
-                        <li><strong>Assistant Prof:</strong> Modern 1BHK/2BHK units in Block 11.</li>
-                        <li><strong>Grade 3:</strong> Dedicated housing for Technical & Lab Staff.</li>
-                        <li><strong>Grade 4:</strong> Residential quarters for Support Staff.</li>
-                    </ul>
-                </div>
-                <button class="btn-teal" onclick="showModal('fullMapModal')">VIEW FULL MAP</button>
-            </div>
-            <div class="map-image">
-                <img src="Images/campusMap.png" alt="LNMIIT Campus Map">
-            </div>
+      <div class="map-container">
+        <div class="map-text">
+          <h2>Explore the Campus</h2>
+          <p class="subtitle">INTERACTIVE HOUSING MAP</p>
+          <div class="info-box">
+            <p>
+              Locate facilities, services, and key residency blocks at a glance.
+              Our allotment system ensures priority based on grade and
+              department.
+            </p>
+            <ul class="grade-list">
+              <li>
+                <strong>Professor Housing:</strong> Premium 3BHK villas for
+                Senior Faculty.
+              </li>
+              <li>
+                <strong>Associate Prof:</strong> Spacious 2BHK/3BHK units in
+                Block 10.
+              </li>
+              <li>
+                <strong>Assistant Prof:</strong> Modern 1BHK/2BHK units in Block
+                11.
+              </li>
+              <li>
+                <strong>Grade 3:</strong> Dedicated housing for Technical & Lab
+                Staff.
+              </li>
+              <li>
+                <strong>Grade 4:</strong> Residential quarters for Support
+                Staff.
+              </li>
+            </ul>
+          </div>
+          <button class="btn-teal" onclick="showModal('fullMapModal')">
+            VIEW FULL MAP
+          </button>
         </div>
+        <div class="map-image">
+          <img src="Images/campusMap.png" alt="LNMIIT Campus Map" />
+        </div>
+      </div>
     </section>
 
     <!-- Apartment Inventory -->
     <section id="inventory" class="inventory-new">
-        <div class="section-title">
-            <h2>Available Residences</h2>
-            <p>CURRENT VACANCIES & OCCUPANCY STATUS</p>
-        </div>
-        <div class="apartment-grid" id="apartment-grid">
-            <!-- Dynamic data -->
-        </div>
+      <div class="section-title">
+        <h2>Available Residences</h2>
+        <p>CURRENT VACANCIES & OCCUPANCY STATUS</p>
+      </div>
+      <div class="apartment-grid" id="apartment-grid">
+        <!-- Dynamic data -->
+      </div>
     </section>
 
     <!-- Modals -->
     <div id="addModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="hideModal('addModal')">&times;</span>
-            <h2>Add New Apartment</h2>
-            <form id="add-apartment-form">
-                <div class="form-group">
-                    <label>Housing Block</label>
-                    <select name="block" required>
-                        <option value="Professor Housing">Professor Housing</option>
-                        <option value="Associate Professor Housing">Associate Professor Housing</option>
-                        <option value="Assistant Professor Housing">Assistant Professor Housing</option>
-                        <option value="Director House">Director House</option>
-                        <option value="Grade 3 Housing">Grade 3 Housing</option>
-                        <option value="Grade 4 Housing">Grade 4 Housing</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Apartment No.</label>
-                        <input type="text" name="apartmentNumber" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Type</label>
-                        <select name="type">
-                            <option value="1BHK">1BHK</option>
-                            <option value="2BHK">2BHK</option>
-                            <option value="3BHK">3BHK</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Included Amenities</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: #f9f9f9; padding: 1rem; border-radius: 8px;">
-                        <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px;"><input type="checkbox" name="amenities" value="Parking"> Parking</label>
-                        <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px;"><input type="checkbox" name="amenities" value="AC"> AC</label>
-                        <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px;"><input type="checkbox" name="amenities" value="Geyser"> Geyser</label>
-                        <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px;"><input type="checkbox" name="amenities" value="Modular Kitchen"> Kitchen</label>
-                    </div>
-                </div>
-                <button type="submit" class="btn-submit">Register Unit</button>
-            </form>
-        </div>
+      <div class="modal-content">
+        <span class="close" onclick="hideModal('addModal')">&times;</span>
+        <h2>Add New Apartment</h2>
+        <form id="add-apartment-form">
+          <div class="form-group">
+            <label>Housing Block</label>
+            <select name="block" required>
+              <option value="Professor Housing">Professor Housing</option>
+              <option value="Associate Professor Housing">
+                Associate Professor Housing
+              </option>
+              <option value="Assistant Professor Housing">
+                Assistant Professor Housing
+              </option>
+              <option value="Director House">Director House</option>
+              <option value="Grade 3 Housing">Grade 3 Housing</option>
+              <option value="Grade 4 Housing">Grade 4 Housing</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Apartment No.</label>
+              <input
+                type="number"
+                name="apartmentNumber"
+                required
+                min="1"
+                step="1"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+              />
+            </div>
+            <div class="form-group">
+              <label>Type</label>
+              <select name="type">
+                <option value="1BHK">1BHK</option>
+                <option value="2BHK">2BHK</option>
+                <option value="3BHK">3BHK</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Included Amenities</label>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+                background: #f9f9f9;
+                padding: 1rem;
+                border-radius: 8px;
+              "
+            >
+              <label
+                style="
+                  font-size: 0.8rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 5px;
+                "
+                ><input type="checkbox" name="amenities" value="Parking" />
+                Parking</label
+              >
+              <label
+                style="
+                  font-size: 0.8rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 5px;
+                "
+                ><input type="checkbox" name="amenities" value="AC" /> AC</label
+              >
+              <label
+                style="
+                  font-size: 0.8rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 5px;
+                "
+                ><input type="checkbox" name="amenities" value="Geyser" />
+                Geyser</label
+              >
+              <label
+                style="
+                  font-size: 0.8rem;
+                  display: flex;
+                  align-items: center;
+                  gap: 5px;
+                "
+                ><input
+                  type="checkbox"
+                  name="amenities"
+                  value="Modular Kitchen"
+                />
+                Kitchen</label
+              >
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">Register Unit</button>
+        </form>
+      </div>
     </div>
 
     <div id="allotModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="hideModal('allotModal')">&times;</span>
-            <h2>Update Allotment</h2>
-            <form id="allot-form">
-                <input type="hidden" name="id" id="edit-id">
-                <div class="form-group">
-                    <label>Faculty Name</label>
-                    <input type="text" name="occupantName" id="edit-name">
-                </div>
-                <div class="form-group">
-                    <label>Allotment Date</label>
-                    <input type="date" name="allotmentDate" id="edit-allot-date">
-                </div>
-                <div class="form-group">
-                    <label>Status</label>
-                    <select name="status" id="edit-status">
-                        <option value="Available">Available</option>
-                        <option value="Occupied">Occupied</option>
-                        <option value="Maintenance">Maintenance</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                    <button type="submit" class="btn-submit" style="flex: 2;">Update</button>
-                    <button type="button" class="btn-teal" style="background: var(--text-light); flex: 1;" onclick="viewHistory()">HISTORY</button>
-                </div>
-            </form>
-        </div>
+      <div class="modal-content">
+        <span class="close" onclick="hideModal('allotModal')">&times;</span>
+        <h2>Update Allotment</h2>
+        <form id="allot-form">
+          <input type="hidden" name="id" id="edit-id" />
+          <div class="form-group">
+            <label>Faculty Name</label>
+            <input
+              type="text"
+              name="occupantName"
+              id="edit-name"
+              oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')"
+            />
+          </div>
+          <div class="form-group">
+            <label>Allotment Date</label>
+            <input type="date" name="allotmentDate" id="edit-allot-date" />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select name="status" id="edit-status">
+              <option value="Available">Available</option>
+              <option value="Occupied">Occupied</option>
+              <option value="Maintenance">Maintenance</option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 1rem; margin-top: 1rem">
+            <button type="submit" class="btn-submit" style="flex: 2">
+              Update
+            </button>
+            <button
+              type="button"
+              class="btn-teal"
+              style="background: var(--text-light); flex: 1"
+              onclick="viewHistory()"
+            >
+              HISTORY
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- History Modal -->
     <div id="historyModal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <span class="close" onclick="hideModal('historyModal')">&times;</span>
-            <h2>Allotment History</h2>
-            <div id="history-list" style="margin-top: 1rem;">
-                <!-- History items dynamic -->
-            </div>
+      <div class="modal-content" style="max-width: 600px">
+        <span class="close" onclick="hideModal('historyModal')">&times;</span>
+        <h2>Allotment History</h2>
+        <div id="history-list" style="margin-top: 1rem">
+          <!-- History items dynamic -->
         </div>
+      </div>
     </div>
 
     <!-- Full Map Modal -->
     <div id="fullMapModal" class="modal">
-        <div class="modal-content" style="max-width: 95%; width: 1200px;">
-            <span class="close" onclick="hideModal('fullMapModal')">&times;</span>
-            <h2>LNMIIT Campus Layout</h2>
-            <img src="Images/campusMap.png" style="width: 100%; border-radius: 10px; margin-top: 1rem;">
-        </div>
+      <div class="modal-content" style="max-width: 95%; width: 1200px">
+        <span class="close" onclick="hideModal('fullMapModal')">&times;</span>
+        <h2>LNMIIT Campus Layout</h2>
+        <img
+          src="Images/campusMap.png"
+          style="width: 100%; border-radius: 10px; margin-top: 1rem"
+        />
+      </div>
     </div>
 
     <!-- Inventory Modal -->
     <div id="inventoryModal" class="modal">
-        <div class="modal-content" style="max-width: 700px;">
-            <span class="close" onclick="hideModal('inventoryModal')">&times;</span>
-            <h2>Unit Inventory</h2>
-            <p id="inv-apartment-desc" style="color: var(--text-light); margin-bottom: 2rem;"></p>
-            
-            <div id="item-list" style="margin-bottom: 2rem;">
-                <!-- Items list dynamic -->
-            </div>
+      <div class="modal-content" style="max-width: 700px">
+        <span class="close" onclick="hideModal('inventoryModal')">&times;</span>
+        <h2>Unit Inventory</h2>
+        <p
+          id="inv-apartment-desc"
+          style="color: var(--text-light); margin-bottom: 2rem"
+        ></p>
 
-            <button class="flash-btn" onclick="showModal('addItemModal')">+ ADD ITEM</button>
+        <div id="item-list" style="margin-bottom: 2rem">
+          <!-- Items list dynamic -->
         </div>
+
+        <button class="flash-btn" onclick="showModal('addItemModal')">
+          + ADD ITEM
+        </button>
+      </div>
     </div>
 
     <!-- Add Item Modal -->
     <div id="addItemModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="hideModal('addItemModal')">&times;</span>
-            <h2>Add Asset/Item</h2>
-            <form id="add-item-form">
-                <input type="hidden" name="apartmentId" id="inv-apt-id">
-                <div class="form-group">
-                    <label>Item Name</label>
-                    <input type="text" name="itemName" placeholder="e.g. Wooden Bed, Office Chair" required>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Quantity</label>
-                        <input type="number" name="quantity" value="1" min="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Condition</label>
-                        <select name="condition">
-                            <option value="New">New</option>
-                            <option value="Good">Good</option>
-                            <option value="Damaged">Damaged</option>
-                            <option value="Needs Replacement">Needs Replacement</option>
-                        </select>
-                    </div>
-                </div>
-                <button type="submit" class="btn-submit">Add to Inventory</button>
-            </form>
-        </div>
+      <div class="modal-content">
+        <span class="close" onclick="hideModal('addItemModal')">&times;</span>
+        <h2>Add Asset/Item</h2>
+        <form id="add-item-form">
+          <input type="hidden" name="apartmentId" id="inv-apt-id" />
+          <div class="form-group">
+            <label>Item Name</label>
+            <input
+              type="text"
+              name="itemName"
+              placeholder="e.g. Wooden Bed, Office Chair"
+              required
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Quantity</label>
+              <input type="number" name="quantity" value="1" min="1" required />
+            </div>
+            <div class="form-group">
+              <label>Condition</label>
+              <select name="condition">
+                <option value="New">New</option>
+                <option value="Good">Good</option>
+                <option value="Damaged">Damaged</option>
+                <option value="Needs Replacement">Needs Replacement</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">Add to Inventory</button>
+        </form>
+      </div>
     </div>
 
     <!-- Edit Item Modal -->
     <div id="editItemModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="hideModal('editItemModal')">&times;</span>
-            <h2>Edit Asset/Item</h2>
-            <form id="edit-item-form">
-                <input type="hidden" name="itemId" id="edit-item-id">
-                <input type="hidden" name="apartmentId" id="edit-item-apt-id">
-                <div class="form-group">
-                    <label>Item Name</label>
-                    <input type="text" name="itemName" id="edit-item-name" required>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Quantity</label>
-                        <input type="number" name="quantity" id="edit-item-qty" min="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Condition</label>
-                        <select name="condition" id="edit-item-cond">
-                            <option value="New">New</option>
-                            <option value="Good">Good</option>
-                            <option value="Damaged">Damaged</option>
-                            <option value="Needs Replacement">Needs Replacement</option>
-                        </select>
-                    </div>
-                </div>
-                <button type="submit" class="btn-submit">Save Changes</button>
-            </form>
-        </div>
+      <div class="modal-content">
+        <span class="close" onclick="hideModal('editItemModal')">&times;</span>
+        <h2>Edit Asset/Item</h2>
+        <form id="edit-item-form">
+          <input type="hidden" name="itemId" id="edit-item-id" />
+          <input type="hidden" name="apartmentId" id="edit-item-apt-id" />
+          <div class="form-group">
+            <label>Item Name</label>
+            <input type="text" name="itemName" id="edit-item-name" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Quantity</label>
+              <input
+                type="number"
+                name="quantity"
+                id="edit-item-qty"
+                min="1"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Condition</label>
+              <select name="condition" id="edit-item-cond">
+                <option value="New">New</option>
+                <option value="Good">Good</option>
+                <option value="Damaged">Damaged</option>
+                <option value="Needs Replacement">Needs Replacement</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">Save Changes</button>
+        </form>
+      </div>
     </div>
 
-    <footer class="teal-footer">
-        <div class="footer-grid">
-            <div class="footer-info">
-                <h3>LNMIIT Housing</h3>
-                <p>Gram - Rupa Ki Nangal, Post - Sumel, Via - Jamdoli, Jaipur-302031</p>
-            </div>
-            <div class="footer-links">
-                <p>Follow Us</p>
-                <div class="socials">
-                    <!-- Icons -->
-                </div>
-            </div>
-            <div class="footer-map-mini">
-                <img src="Images/campusMap.png" width="100">
-            </div>
+    <!-- Left Hamburger Drawer -->
+    <div id="hamburger-drawer" class="sidebar" style="right: auto; left: -400px; transition: left 0.4s ease;">
+      <div class="sidebar-header" style="background: var(--teal-dark);">
+        <h2>Quick Filters</h2>
+        <span class="close-sidebar" onclick="toggleHamburger()">&times;</span>
+      </div>
+      <div class="sidebar-content" style="padding: 0;">
+        <ul style="list-style: none; margin: 0; padding: 0;">
+          <li onclick="filterByStatus('Available'); toggleHamburger();" style="padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.3s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'">
+            <img src="https://img.icons8.com/ios/50/008080/ok.png" width="24" />
+            <span style="font-weight: 600; color: var(--text-dark);">Available Apartments</span>
+          </li>
+          <li onclick="filterByStatus('Occupied'); toggleHamburger();" style="padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.3s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'">
+            <img src="https://img.icons8.com/ios/50/008080/cancel.png" width="24" />
+            <span style="font-weight: 600; color: var(--text-dark);">Occupied Apartments</span>
+          </li>
+          <li id="hamburger-inquiries-btn" onclick="openAdminInquiries(); toggleHamburger();" style="display: none; padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; align-items: center; gap: 1rem; transition: 0.3s; background: var(--teal-light);" onmouseover="this.style.background='#b2dfdb'" onmouseout="this.style.background='var(--teal-light)'">
+            <img src="https://img.icons8.com/ios-filled/50/008080/chat.png" width="24" />
+            <span style="font-weight: 700; color: var(--teal-dark);">Admin Inquiries</span>
+          </li>
+          <li id="hamburger-facilities-btn" onclick="openFacilitiesModal(); toggleHamburger();" style="display: none; padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; align-items: center; gap: 1rem; transition: 0.3s; background: var(--teal-light);" onmouseover="this.style.background='#b2dfdb'" onmouseout="this.style.background='var(--teal-light)'">
+            <img src="https://img.icons8.com/ios-filled/50/008080/settings.png" width="24" />
+            <span style="font-weight: 700; color: var(--teal-dark);">Manage Facilities</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Floating Inquiry Button -->
+    <button id="floating-inquiry-btn" class="floating-btn" onclick="openSidebar()" style="display: none;">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/chat.png" width="24" />
+      <span>INQUIRY</span>
+    </button>
+
+    <!-- Inquiry Sidebar -->
+    <div id="inquiry-sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <h2>Send Inquiry</h2>
+        <span class="close-sidebar" onclick="closeSidebar()">&times;</span>
+      </div>
+      <div class="sidebar-content">
+        <p style="color: var(--text-light); margin-bottom: 1.5rem; font-size: 0.9rem;">Have questions about an apartment or allotment process? Message us below.</p>
+        <form id="inquiry-form">
+          <div class="form-group">
+            <label>Apartment (Optional)</label>
+            <input type="text" name="apartment" placeholder="e.g. Unit 12, Professor Housing" />
+          </div>
+          <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" name="name" required placeholder="Enter your full name" />
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" name="email" required placeholder="To receive replies from admin" />
+          </div>
+          <div class="form-group">
+            <label>Phone Number (Optional)</label>
+            <input type="tel" name="phone" placeholder="Enter contact number" />
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea name="message" rows="4" required placeholder="Type your message here..."></textarea>
+          </div>
+          <button type="submit" class="btn-submit">Send Message</button>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- Admin Inquiries Modal -->
+    <div id="adminInquiriesModal" class="modal">
+      <div class="modal-content" style="max-width: 100%; width: 100%; height: 100vh; margin: 0; border-radius: 0; display: flex; flex-direction: column;">
+        <span class="close" onclick="hideModal('adminInquiriesModal')">&times;</span>
+        <h2>Guest & User Inquiries</h2>
+        <p style="color: var(--text-light); margin-bottom: 2rem;">Manage inquiries sent via the Inquiry Sidebar.</p>
+        <div id="admin-inquiries-list" style="flex: 1; overflow-y: auto;">
+          <!-- Dynamic Inquiries -->
         </div>
-    </footer>
+      </div>
+    </div>
+
+    <!-- Admin Facilities Modal -->
+    <div id="facilitiesModal" class="modal">
+      <div class="modal-content" style="max-width: 600px; padding: 2.5rem;">
+        <span class="close" onclick="hideModal('facilitiesModal')">&times;</span>
+        <h2>Facilities Status</h2>
+        <p style="color: var(--text-light); margin-bottom: 2rem;">Manage facility availability based on housing block.</p>
+        
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label style="font-weight: 600; font-size: 0.9rem;">Select Housing Block</label>
+          <select id="facility-block-select" onchange="renderFacilitiesForm()">
+            <option value="Professor Housing">Professor Housing</option>
+            <option value="Associate Prof Housing">Associate Prof Housing</option>
+            <option value="Assistant Prof Housing">Assistant Prof Housing</option>
+            <option value="Grade 3 Staff Housing">Grade 3 Staff Housing</option>
+            <option value="Grade 4 Staff Housing">Grade 4 Staff Housing</option>
+          </select>
+        </div>
+
+        <div id="facilities-list" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+          <!-- Dynamically populated via JS -->
+        </div>
+
+        <button class="btn-teal" style="width: 100%; padding: 1rem; font-size: 1rem;" onclick="saveFacilities()">Save Facilities Status</button>
+      </div>
+    </div>
 
     <script src="js/main.js"></script>
-</body>
+  </body>
 </html>
