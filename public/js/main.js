@@ -234,6 +234,9 @@ function changeMode(mode) {
     const adminDashboard = document.getElementById('admin-dashboard');
     const mapSection = document.getElementById('campus-map-section');
     const quickFeatures = document.getElementById('quick-features');
+    const inventorySection = document.getElementById('inventory');
+    const categoriesSection = document.getElementById('categories-section');
+    const heroSearchBar = document.getElementById('hero-search-bar');
     
     if (mode === 'admin') {
         if (adminDashboard) adminDashboard.style.display = 'block';
@@ -247,6 +250,9 @@ function changeMode(mode) {
         if (hamburgerIcon) hamburgerIcon.style.display = 'block';
         if (myAptLink) myAptLink.style.display = 'none';
         if (myAptSection) myAptSection.style.display = 'none';
+        if (inventorySection) inventorySection.style.display = 'block';
+        if (categoriesSection) categoriesSection.style.display = 'flex';
+        if (heroSearchBar) heroSearchBar.style.display = 'none';
         
         refreshAdminDashboard();
         fetchActivities();
@@ -265,6 +271,9 @@ function changeMode(mode) {
             myAptSection.style.display = 'block';
             renderMyApartment();
         }
+        if (inventorySection) inventorySection.style.display = 'none';
+        if (categoriesSection) categoriesSection.style.display = 'none';
+        if (heroSearchBar) heroSearchBar.style.display = 'none';
     } else {
         if (adminDashboard) adminDashboard.style.display = 'none';
         if (mapSection) mapSection.style.display = 'block';
@@ -277,6 +286,9 @@ function changeMode(mode) {
         if (hamburgerIcon) hamburgerIcon.style.display = 'none';
         if (myAptLink) myAptLink.style.display = 'none';
         if (myAptSection) myAptSection.style.display = 'none';
+        if (inventorySection) inventorySection.style.display = 'block';
+        if (categoriesSection) categoriesSection.style.display = 'flex';
+        if (heroSearchBar) heroSearchBar.style.display = 'flex';
     }
     
     // Re-render apartments to show/hide admin buttons
