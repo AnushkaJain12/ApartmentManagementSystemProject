@@ -123,6 +123,7 @@
               name="name"
               required
               placeholder="Full Name"
+              onkeypress="allowOnlyLetters(event)"
               style="
                 width: 100%;
                 padding: 0.8rem;
@@ -157,6 +158,7 @@
               name="department"
               required
               placeholder="Department"
+              onkeypress="allowOnlyLetters(event)"
               style="
                 width: 100%;
                 padding: 0.8rem;
@@ -230,8 +232,21 @@
         .getElementById("add-faculty-form")
         .addEventListener("submit", async (e) => {
           e.preventDefault();
+
           const formData = new FormData(e.target);
           const data = Object.fromEntries(formData.entries());
+
+          const regex = /^[A-Za-z\s]+$/;
+
+          if (!regex.test(data.name)) {
+            alert("Full Name must contain only alphabets");
+            return;
+          }
+
+          if (!regex.test(data.department)) {
+            alert("Department must contain only alphabets");
+            return;
+          }
 
           try {
             const res = await fetch(`${API_URL}/faculty`, {
@@ -252,6 +267,15 @@
             alert("Error creating account");
           }
         });
+
+      function allowOnlyLetters(event) {
+        const char = String.fromCharCode(event.which);
+
+        // allow letters + space + backspace
+        if (!/[A-Za-z\s]/.test(char)) {
+          event.preventDefault();
+        }
+      }
 
       window.onload = () => {
         const role = localStorage.getItem("userRole");

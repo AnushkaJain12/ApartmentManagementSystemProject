@@ -114,7 +114,15 @@
           <div class="form-row">
             <div class="form-group">
               <label>Apartment No.</label>
-              <input type="number" name="apartmentNumber" required />
+              <input
+                type="number"
+                name="apartmentNumber"
+                required
+                min="1"
+                step="1"
+                onkeydown="blockInvalidNumberInput(event)"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+              />
             </div>
             <div class="form-group">
               <label>Type</label>
@@ -254,6 +262,12 @@
                   </tbody>
               </table>
           `;
+      }
+
+      function blockInvalidNumberInput(event) {
+        if (event.key === "-" || event.key === "+" || event.key === "e") {
+          event.preventDefault();
+        }
       }
 
       async function deleteApartment(id) {

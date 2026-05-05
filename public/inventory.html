@@ -111,6 +111,8 @@
               name="itemName"
               placeholder="e.g. Wooden Bed"
               required
+              onkeypress="allowOnlyLetters(event)"
+              oninput="cleanInput(this)"
             />
           </div>
           <div class="form-row">
@@ -198,6 +200,17 @@
           `;
       }
 
+      function allowOnlyLetters(event) {
+        const char = String.fromCharCode(event.which);
+        if (!/[A-Za-z\s]/.test(char)) {
+          event.preventDefault();
+        }
+      }
+
+      function cleanInput(el) {
+        el.value = el.value.replace(/[^A-Za-z\s]/g, "");
+      }
+
       async function deleteItem(id) {
         if (!confirm("Delete this item?")) return;
         await fetch(`${API_URL}/inventory/${id}`, { method: "DELETE" });
@@ -210,6 +223,13 @@
           e.preventDefault();
           const formData = new FormData(e.target);
           const data = Object.fromEntries(formData.entries());
+
+          const regex = /^[A-Za-z\s]+$/;
+
+          if (!regex.test(data.itemName)) {
+            alert("Item name must contain only alphabets");
+            return;
+          }
 
           await fetch(`${API_URL}/inventory`, {
             method: "POST",
