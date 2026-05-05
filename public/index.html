@@ -46,7 +46,7 @@
         <div class="logo">LNMIIT<span>HOUSING</span></div>
       </div>
       <ul class="nav-links" id="nav-links">
-        <li><a href="#" class="active">Home</a></li>
+        <li><a href="#" class="active" onclick="closeAllModals()">Home</a></li>
         <li><a href="#my-apartment" id="my-apt-link" style="display: none;">My Apartment</a></li>
         <li><a href="#map-info">Campus Map</a></li>
         <li><a href="#inventory">Apartments</a></li>
@@ -373,7 +373,7 @@
         <form id="add-apartment-form">
           <div class="form-group">
             <label>Housing Block</label>
-            <select name="block" required>
+            <select name="block" id="add-apt-block-select" required onchange="checkUnitNumber()">
               <option value="Professor Housing">Professor Housing</option>
               <option value="Associate Professor Housing">
                 Associate Professor Housing
@@ -392,11 +392,13 @@
               <input
                 type="number"
                 name="apartmentNumber"
+                id="add-apt-num-input"
                 required
                 min="1"
                 step="1"
-                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkUnitNumber();"
               />
+              <p id="unit-error" style="color: #ff4757; font-size: 0.8rem; display: none; margin-top: 5px; font-weight: 600;">Unit number already exists in this block!</p>
             </div>
             <div class="form-group">
               <label>Type</label>
@@ -657,7 +659,7 @@
             <span style="font-weight: 700; color: var(--teal-dark);">Manage Facilities</span>
           </li>
           <!-- New Management Links -->
-          <li onclick="openTenantsPage(); toggleHamburger();" style="padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.3s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'">
+          <li onclick="window.location.href='/faculty.html'" style="padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.3s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'">
             <img src="https://img.icons8.com/ios/50/008080/group.png" width="24" />
             <span style="font-weight: 600; color: var(--text-dark);">Faculty Accounts</span>
           </li>
@@ -752,21 +754,6 @@
       </div>
     </div>
 
-    <!-- Full Page Management Sections (Admin Only) -->
-    <section id="tenantsPage" class="admin-full-page" style="display: none;">
-      <div style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
-        <button class="back-btn" onclick="showAdminDashboard()">← Back to Dashboard</button>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; margin-top: 1rem;">
-          <div>
-            <h1 style="font-size: 2.5rem; color: var(--text-dark); margin: 0;">Faculty Accounts</h1>
-            <p style="color: var(--text-light); margin-top: 0.5rem;">System Management > Accounts</p>
-          </div>
-          <button class="flash-btn" onclick="showModal('addFacultyModal')">+ Register New Faculty</button>
-        </div>
-        <div id="tenants-table-container" class="admin-table-wrapper"></div>
-      </div>
-    </section>
-
     <section id="globalInventoryPage" class="admin-full-page" style="display: none;">
       <div style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
         <button class="back-btn" onclick="showAdminDashboard()">← Back to Dashboard</button>
@@ -797,15 +784,11 @@
 
     <style>
       .admin-full-page {
-        position: fixed;
-        top: 0;
-        left: 0;
         width: 100%;
-        height: 100%;
+        min-height: 100vh;
         background: #f8f9fa;
-        z-index: 999;
-        overflow-y: auto;
-        padding-top: 80px; /* Offset for nav */
+        padding-top: 100px; /* Offset for nav */
+        padding-bottom: 4rem;
       }
       .back-btn {
         background: transparent;
@@ -869,40 +852,6 @@
         border-color: #ddd;
       }
     </style>
-
-    <!-- Add Faculty Modal -->
-    <div id="addFacultyModal" class="modal">
-      <div class="modal-content" style="max-width: 500px;">
-        <span class="close" onclick="hideModal('addFacultyModal')">&times;</span>
-        <h2 style="color: var(--teal-dark); margin-bottom: 1.5rem;">Register Faculty</h2>
-        <form id="add-faculty-form">
-          <div class="form-group">
-            <label>Faculty ID (Unique)</label>
-            <input type="text" name="facultyId" required placeholder="e.g. F001" style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
-          </div>
-          <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" name="name" required placeholder="Full Name" style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
-          </div>
-          <div class="form-group" style="margin-bottom: 1rem;">
-            <label>Role</label>
-            <select name="role" required style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
-              <option value="Professor">Professor</option>
-              <option value="Associate Professor">Associate Professor</option>
-              <option value="Assistant Professor">Assistant Professor</option>
-              <option value="Staff">Staff</option>
-              <option value="Warden">Warden</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Department</label>
-            <input type="text" name="department" required placeholder="Department" style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
-          </div>
-          <p style="font-size: 0.75rem; color: #999; margin-bottom: 1rem;">Default password will be <strong>FacultyID@123</strong></p>
-          <button type="submit" class="btn-teal" style="width: 100%;">Create Account</button>
-        </form>
-      </div>
-    </div>
 
     <!-- Change Password Modal (Mandatory) -->
     <div id="changePasswordModal" class="modal" style="background: rgba(0,0,0,0.85); z-index: 9999;">

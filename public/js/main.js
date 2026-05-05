@@ -499,30 +499,6 @@ document.getElementById('change-password-form').addEventListener('submit', async
     }
 });
 
-document.getElementById('add-faculty-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
-
-    try {
-        const res = await fetch(`${API_URL}/faculty`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-
-        if (res.ok) {
-            alert('Faculty account created successfully!');
-            hideModal('addFacultyModal');
-            openTenantsPage(); // Refresh table
-        } else {
-            const err = await res.json();
-            alert(err.message);
-        }
-    } catch (err) {
-        alert('Error creating account');
-    }
-});
 
 // Search Logic
 searchInput.addEventListener('input', (e) => {
@@ -555,6 +531,11 @@ function showModal(id) {
 }
 function hideModal(id) { 
     document.getElementById(id).style.display = 'none'; 
+    document.body.classList.remove('no-scroll');
+}
+function closeAllModals() {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(m => m.style.display = 'none');
     document.body.classList.remove('no-scroll');
 }
 
@@ -687,8 +668,41 @@ async function viewHistory() {
 }
 
 // Forms
+function checkUnitNumber() {
+    const unitInput = document.getElementById('add-apt-num-input');
+    const blockInput = document.getElementById('add-apt-block-select');
+    const errorMsg = document.getElementById('unit-error');
+    
+    if (!unitInput || !blockInput || !errorMsg) return;
+    
+    const unitVal = unitInput.value;
+    const blockVal = blockInput.value;
+    
+    if (unitVal.trim() === '') {
+        errorMsg.style.display = 'none';
+        return;
+    }
+    
+    const exists = allApartments.some(a => a.apartmentNumber == unitVal && a.block === blockVal);
+    if (exists) {
+        errorMsg.style.display = 'block';
+    } else {
+        errorMsg.style.display = 'none';
+    }
+}
+
 document.getElementById('add-apartment-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    const unitInput = document.getElementById('add-apt-num-input').value;
+    const blockInput = document.getElementById('add-apt-block-select').value;
+    const exists = allApartments.some(a => a.apartmentNumber == unitInput && a.block === blockInput);
+    
+    if (exists) {
+        alert('Cannot register unit. This unit number already exists in the selected block!');
+        return;
+    }
+
     const formData = new FormData(e.target);
     const data = {};
     formData.forEach((value, key) => {
@@ -926,42 +940,6 @@ function saveFacilities() {
 }
 
 // Management Pages Logic
-async function openTenantsPage() {
-    hideAllAdminPages();
-    document.getElementById('tenantsPage').style.display = 'block';
-    const res = await fetch(`${API_URL}/faculty`);
-    const faculties = await res.json();
-    const container = document.getElementById('tenants-table-container');
-    
-    container.innerHTML = `
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Faculty ID</th>
-                    <th>Name</th>
-                    <th>Role</th>
-                    <th>Department</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${faculties.map(f => `
-                    <tr>
-                        <td style="font-weight: 700;">${f.facultyId}</td>
-                        <td>${f.name}</td>
-                        <td>${f.role}</td>
-                        <td>${f.department}</td>
-                        <td>
-                            <span style="color: #27ae60; font-weight: 600;">
-                                Active
-                            </span>
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
-}
 
 async function openGlobalInventory() {
     hideAllAdminPages();
