@@ -6,6 +6,7 @@ const searchInput = document.getElementById('search-input');
 let allApartments = [];
 let currentMode = 'guest'; // default mode
 let submittedInquiries = []; // store inquiries
+let facilitiesData = {}; // store facilities status per block
 
 // Scroll Effect for Navbar
 window.addEventListener('scroll', () => {
@@ -148,15 +149,18 @@ function changeMode(mode) {
     currentMode = mode;
     const addBtn = document.getElementById('add-unit-btn');
     const hamburgerInquiriesBtn = document.getElementById('hamburger-inquiries-btn');
+    const hamburgerFacilitiesBtn = document.getElementById('hamburger-facilities-btn');
     const inquiryBtn = document.getElementById('floating-inquiry-btn');
     
     if (mode === 'admin') {
         addBtn.style.display = 'block';
         hamburgerInquiriesBtn.style.display = 'flex';
+        hamburgerFacilitiesBtn.style.display = 'flex';
         inquiryBtn.style.display = 'none';
     } else {
         addBtn.style.display = 'none';
         hamburgerInquiriesBtn.style.display = 'none';
+        hamburgerFacilitiesBtn.style.display = 'none';
         inquiryBtn.style.display = 'flex'; // show floating inquiry button
     }
     
@@ -541,4 +545,63 @@ function openAdminInquiries() {
     }
     
     showModal('adminInquiriesModal');
+}
+
+// Facilities Management Logic
+const facilitiesConfig = [
+    { key: 'water', label: 'Water Supply', icon: 'https://img.icons8.com/ios-filled/50/4a90e2/water.png' },
+    { key: 'electricity', label: 'Electricity', icon: 'https://img.icons8.com/ios-filled/50/4a90e2/flash-on.png' },
+    { key: 'internet', label: 'Internet', icon: 'https://img.icons8.com/ios-filled/50/4a90e2/wifi--v1.png' },
+    { key: 'parking', label: 'Parking', icon: 'https://img.icons8.com/ios-filled/50/4a90e2/parking.png' }
+];
+
+function openFacilitiesModal() {
+    renderFacilitiesForm();
+    showModal('facilitiesModal');
+}
+
+function renderFacilitiesForm() {
+    const block = document.getElementById('facility-block-select').value;
+    const list = document.getElementById('facilities-list');
+    
+    // Initialize if empty
+    if (!facilitiesData[block]) {
+        facilitiesData[block] = { water: 'Available', electricity: 'Available', internet: 'Available', parking: 'Available' };
+    }
+    
+    const data = facilitiesData[block];
+    
+    list.innerHTML = facilitiesConfig.map(f => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <img src="${f.icon}" width="20" />
+                <span style="font-weight: 600; font-size: 0.95rem;">${f.label}</span>
+            </div>
+            <select id="fac-${f.key}" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd; font-weight: 600; color: ${data[f.key] === 'Available' ? '#2ecc71' : (data[f.key] === 'Under Maintenance' ? '#e67e22' : '#e74c3c')};">
+                <option value="Available" ${data[f.key] === 'Available' ? 'selected' : ''}>Available</option>
+                <option value="Under Maintenance" ${data[f.key] === 'Under Maintenance' ? 'selected' : ''}>Under Maintenance</option>
+                <option value="Unavailable" ${data[f.key] === 'Unavailable' ? 'selected' : ''}>Unavailable</option>
+            </select>
+        </div>
+    `).join('');
+    
+    // Add event listeners to select elements to change their color dynamically
+    facilitiesConfig.forEach(f => {
+        const select = document.getElementById(`fac-${f.key}`);
+        select.addEventListener('change', (e) => {
+            const val = e.target.value;
+            e.target.style.color = val === 'Available' ? '#2ecc71' : (val === 'Under Maintenance' ? '#e67e22' : '#e74c3c');
+        });
+    });
+}
+
+function saveFacilities() {
+    const block = document.getElementById('facility-block-select').value;
+    
+    facilitiesConfig.forEach(f => {
+        facilitiesData[block][f.key] = document.getElementById(`fac-${f.key}`).value;
+    });
+    
+    alert(`Facilities status for ${block} updated successfully!`);
+    hideModal('facilitiesModal');
 }
