@@ -638,6 +638,9 @@ function scrollToResults() {
 function showModal(id) { 
     document.getElementById(id).style.display = 'block'; 
     document.body.classList.add('no-scroll');
+    if (id === 'addModal') {
+        updateTypeOptions();
+    }
 }
 function hideModal(id) { 
     document.getElementById(id).style.display = 'none'; 
@@ -647,6 +650,28 @@ function closeAllModals() {
     const modals = document.querySelectorAll('.modal');
     modals.forEach(m => m.style.display = 'none');
     document.body.classList.remove('no-scroll');
+}
+
+function updateTypeOptions() {
+    const blockSelect = document.getElementById('add-apt-block-select');
+    const typeSelect = document.getElementById('add-apt-type-select');
+    if (!blockSelect || !typeSelect) return;
+
+    const block = blockSelect.value;
+    let options = [];
+
+    if (block === 'Professor Housing') {
+        options = ['3BHK'];
+    } else if (block === 'Associate Professor Housing') {
+        options = ['2BHK', '3BHK'];
+    } else if (block === 'Assistant Professor Housing') {
+        options = ['1BHK', '2BHK'];
+    } else {
+        // Grade 3, Grade 4, etc.
+        options = ['1BHK', '2BHK', '3BHK'];
+    }
+
+    typeSelect.innerHTML = options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
 }
 
 function openAllotModal(id, name, status, date, facultyId) {

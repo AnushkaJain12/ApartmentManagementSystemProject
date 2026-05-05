@@ -373,7 +373,7 @@
         <form id="add-apartment-form">
           <div class="form-group">
             <label>Housing Block</label>
-            <select name="block" id="add-apt-block-select" required onchange="checkUnitNumber()">
+            <select name="block" id="add-apt-block-select" required onchange="checkUnitNumber(); updateTypeOptions();">
               <option value="Professor Housing">Professor Housing</option>
               <option value="Associate Professor Housing">
                 Associate Professor Housing
@@ -401,7 +401,7 @@
             </div>
             <div class="form-group">
               <label>Type</label>
-              <select name="type">
+              <select name="type" id="add-apt-type-select">
                 <option value="1BHK">1BHK</option>
                 <option value="2BHK">2BHK</option>
                 <option value="3BHK">3BHK</option>
