@@ -266,6 +266,10 @@ app.get('/api/inventory/:apartmentId', async (req, res) => {
 });
 
 app.post('/api/inventory', async (req, res) => {
+    const { itemName } = req.body;
+    if (/\d/.test(itemName)) {
+        return res.status(400).json({ message: 'Item name cannot contain numbers. Please enter a proper name.' });
+    }
     const item = new Inventory(req.body);
     try {
         const newItem = await item.save();

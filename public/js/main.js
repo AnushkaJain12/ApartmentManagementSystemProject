@@ -837,6 +837,12 @@ document.getElementById('add-item-form').addEventListener('submit', async (e) =>
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
     
+    // Validate Item Name (no numbers)
+    if (/\d/.test(data.itemName)) {
+        alert('Item name is not proper. Please enter a proper name without numbers.');
+        return;
+    }
+
     // Ensure quantity is a number
     data.quantity = parseInt(data.quantity);
 
@@ -866,6 +872,12 @@ document.getElementById('edit-item-form').addEventListener('submit', async (e) =
     const formData = new FormData(e.target);
     const { itemId, apartmentId, ...data } = Object.fromEntries(formData.entries());
     
+    // Validate Item Name (no numbers)
+    if (/\d/.test(data.itemName)) {
+        alert('Item name is not proper. Please enter a proper name without numbers.');
+        return;
+    }
+
     data.quantity = parseInt(data.quantity);
 
     try {

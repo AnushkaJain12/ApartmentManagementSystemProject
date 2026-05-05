@@ -574,6 +574,9 @@
               name="itemName"
               placeholder="e.g. Wooden Bed, Office Chair"
               required
+              oninput="this.value = this.value.replace(/[0-9]/g, '')"
+              pattern="^[A-Za-z\s]+$"
+              title="Item name should only contain letters and spaces"
             />
           </div>
           <div class="form-row">
@@ -606,7 +609,15 @@
           <input type="hidden" name="apartmentId" id="edit-item-apt-id" />
           <div class="form-group">
             <label>Item Name</label>
-            <input type="text" name="itemName" id="edit-item-name" required />
+            <input 
+              type="text" 
+              name="itemName" 
+              id="edit-item-name" 
+              required 
+              oninput="this.value = this.value.replace(/[0-9]/g, '')"
+              pattern="^[A-Za-z\s]+$"
+              title="Item name should only contain letters and spaces"
+            />
           </div>
           <div class="form-row">
             <div class="form-group">
