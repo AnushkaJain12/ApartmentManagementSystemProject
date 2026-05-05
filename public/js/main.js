@@ -8,6 +8,11 @@ let currentMode = 'guest'; // default mode
 let currentUser = null; // store current logged in username
 let submittedInquiries = []; // store inquiries
 let facilitiesData = JSON.parse(localStorage.getItem('facilitiesData')) || {}; // store facilities status per block
+let currentFilters = {
+    term: '',
+    status: 'all',
+    block: 'all'
+};
 
 // Scroll Effect for Navbar
 window.addEventListener('scroll', () => {
@@ -50,22 +55,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show dashboard initially and prevent scrolling
         showDashboard();
     }
-    // Status Filter Dropdown
     const statusFilter = document.getElementById('status-filter');
     if (statusFilter) {
         statusFilter.addEventListener('change', (e) => {
-            const val = e.target.value;
+            currentFilters.status = e.target.value;
+            
             // Change text color of the select based on selected value
-            if (val === 'Available') e.target.style.color = '#27ae60';
-            else if (val === 'Occupied') e.target.style.color = '#ff4757';
-            else if (val === 'Maintenance') e.target.style.color = '#f1c40f';
+            if (currentFilters.status === 'Available') e.target.style.color = '#27ae60';
+            else if (currentFilters.status === 'Occupied') e.target.style.color = '#ff4757';
+            else if (currentFilters.status === 'Maintenance') e.target.style.color = '#f1c40f';
             else e.target.style.color = 'var(--text-dark)';
 
-            if (val === 'all') {
-                renderApartments(allApartments);
-            } else {
-                filterByStatus(val);
-            }
+            applyFilters();
         });
     }
 
@@ -93,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Initial Load logic
 window.onload = () => {
-    fetchApartments();
+    // fetchApartments() is already called in DOMContentLoaded, no need to call it twice
     
     // Check if the URL is /admin
     if (window.location.pathname === '/admin') {
@@ -117,7 +118,7 @@ async function fetchApartments() {
     try {
         const res = await fetch(`${API_URL}/apartments`);
         allApartments = await res.json();
-        renderApartments(allApartments);
+        applyFilters();
     } catch (err) {
         console.error('Error fetching apartments:', err);
     }
@@ -167,21 +168,56 @@ function renderApartments(apartments) {
     `).join('');
 }
 
+// Centralized Filter Logic
+function applyFilters() {
+    let filtered = allApartments;
+
+    // 1. Filter by Search Term
+    if (currentFilters.term) {
+        const term = currentFilters.term.toLowerCase();
+        filtered = filtered.filter(apt => {
+            const aptNum = (apt.apartmentNumber || '').toLowerCase();
+            const block = (apt.block || '').toLowerCase();
+            const occupant = (apt.occupantName || '').toLowerCase();
+            return aptNum.includes(term) || block.includes(term) || occupant.includes(term);
+        });
+    }
+
+    // 2. Filter by Status
+    if (currentFilters.status !== 'all') {
+        filtered = filtered.filter(apt => apt.status === currentFilters.status);
+    }
+
+    // 3. Filter by Block
+    if (currentFilters.block !== 'all') {
+        filtered = filtered.filter(apt => apt.block === currentFilters.block);
+    }
+
+    renderApartments(filtered);
+}
+
 // Filter by Block (from icons)
 function filterByBlock(blockName) {
-    const filtered = allApartments.filter(apt => apt.block === blockName);
-    renderApartments(filtered);
+    currentFilters.block = blockName;
+    applyFilters();
     document.getElementById('inventory').scrollIntoView({ behavior: 'smooth' });
 }
 
 function filterByStatus(status) {
-    const filtered = allApartments.filter(apt => apt.status === status);
-    renderApartments(filtered);
+    currentFilters.status = status;
+    applyFilters();
     document.getElementById('inventory').scrollIntoView({ behavior: 'smooth' });
 }
 
 function showAllApartments() {
-    renderApartments(allApartments);
+    currentFilters = { term: '', status: 'all', block: 'all' };
+    if (searchInput) searchInput.value = '';
+    const statusFilter = document.getElementById('status-filter');
+    if (statusFilter) {
+        statusFilter.value = 'all';
+        statusFilter.style.color = 'var(--text-dark)';
+    }
+    applyFilters();
     document.getElementById('inventory').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -244,7 +280,7 @@ function changeMode(mode) {
     }
     
     // Re-render apartments to show/hide admin buttons
-    renderApartments(allApartments);
+    applyFilters();
 }
 
 async function refreshAdminDashboard() {
@@ -571,15 +607,8 @@ document.getElementById('change-password-form').addEventListener('submit', async
 
 // Search Logic
 searchInput.addEventListener('input', (e) => {
-    const term = e.target.value.toLowerCase();
-    const filtered = allApartments.filter(apt => {
-        const aptNum = (apt.apartmentNumber || '').toLowerCase();
-        const block = (apt.block || '').toLowerCase();
-        const occupant = (apt.occupantName || '').toLowerCase();
-        
-        return aptNum.includes(term) || block.includes(term) || occupant.includes(term);
-    });
-    renderApartments(filtered);
+    currentFilters.term = e.target.value;
+    applyFilters();
 });
 
 // Auto-scroll on Enter
