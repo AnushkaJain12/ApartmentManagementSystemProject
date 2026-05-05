@@ -17,6 +17,13 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
+const path = require('path');
+
+// Serve index.html for root and admin paths
+app.get(['/', '/admin'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('Connected to MongoDB'))
@@ -119,8 +126,14 @@ app.get('/api/apartments', async (req, res) => {
 
 // Add new apartment
 app.post('/api/apartments', async (req, res) => {
-    const apartment = new Apartment(req.body);
     try {
+        const { apartmentNumber } = req.body;
+        const existing = await Apartment.findOne({ apartmentNumber });
+        if (existing) {
+            return res.status(400).json({ message: `Apartment number ${apartmentNumber} already exists!` });
+        }
+        
+        const apartment = new Apartment(req.body);
         const newApartment = await apartment.save();
         res.status(201).json(newApartment);
     } catch (err) {

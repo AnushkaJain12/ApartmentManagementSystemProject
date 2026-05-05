@@ -91,6 +91,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Initial Load logic
+window.onload = () => {
+    fetchApartments();
+    
+    // Check if the URL is /admin
+    if (window.location.pathname === '/admin') {
+        openLoginModal('admin');
+    } else {
+        // Default to guest mode
+        const savedRole = localStorage.getItem('userRole');
+        const savedUser = localStorage.getItem('currentUser');
+        
+        if (savedRole && savedUser) {
+            currentUser = savedUser;
+            selectRole(savedRole);
+        } else {
+            selectRole('guest');
+        }
+    }
+};
+
 // Fetch All Apartments
 async function fetchApartments() {
     try {
@@ -174,8 +195,15 @@ function changeMode(mode) {
     const hamburgerIcon = document.getElementById('hamburger-menu-icon');
     const myAptLink = document.getElementById('my-apt-link');
     const myAptSection = document.getElementById('my-apartment');
+    const adminDashboard = document.getElementById('admin-dashboard');
+    const mapSection = document.getElementById('campus-map-section');
+    const quickFeatures = document.getElementById('quick-features');
     
     if (mode === 'admin') {
+        if (adminDashboard) adminDashboard.style.display = 'block';
+        if (mapSection) mapSection.style.display = 'none';
+        if (quickFeatures) quickFeatures.style.display = 'none';
+        
         addBtn.style.display = 'block';
         hamburgerInquiriesBtn.style.display = 'flex';
         hamburgerFacilitiesBtn.style.display = 'flex';
@@ -183,7 +211,13 @@ function changeMode(mode) {
         if (hamburgerIcon) hamburgerIcon.style.display = 'block';
         if (myAptLink) myAptLink.style.display = 'none';
         if (myAptSection) myAptSection.style.display = 'none';
+        
+        refreshAdminDashboard();
     } else if (mode === 'user') {
+        if (adminDashboard) adminDashboard.style.display = 'none';
+        if (mapSection) mapSection.style.display = 'block';
+        if (quickFeatures) quickFeatures.style.display = 'none';
+
         addBtn.style.display = 'none';
         hamburgerInquiriesBtn.style.display = 'none';
         hamburgerFacilitiesBtn.style.display = 'none';
@@ -195,6 +229,10 @@ function changeMode(mode) {
             renderMyApartment();
         }
     } else {
+        if (adminDashboard) adminDashboard.style.display = 'none';
+        if (mapSection) mapSection.style.display = 'block';
+        if (quickFeatures) quickFeatures.style.display = 'block';
+
         addBtn.style.display = 'none';
         hamburgerInquiriesBtn.style.display = 'none';
         hamburgerFacilitiesBtn.style.display = 'none';
@@ -206,6 +244,62 @@ function changeMode(mode) {
     
     // Re-render apartments to show/hide admin buttons
     renderApartments(allApartments);
+}
+
+async function refreshAdminDashboard() {
+    try {
+        // 1. Fetch Stats
+        const statsRes = await fetch(`${API_URL}/stats`);
+        const stats = await statsRes.json();
+        
+        // 2. Fetch Faculty Count
+        const facRes = await fetch(`${API_URL}/faculty`);
+        const faculties = await facRes.json();
+
+        // 3. Update Stat Cards
+        document.getElementById('stat-total').innerText = stats.total || 0;
+        document.getElementById('stat-occupied').innerText = stats.occupied || 0;
+        document.getElementById('stat-vacant').innerText = stats.available || 0;
+        document.getElementById('stat-faculty').innerText = faculties.length || 0;
+
+        const occPct = stats.total > 0 ? Math.round((stats.occupied / stats.total) * 100) : 0;
+        const vacPct = stats.total > 0 ? Math.round((stats.available / stats.total) * 100) : 0;
+        
+        document.getElementById('stat-occupied-pct').innerText = `${occPct}% Occupied`;
+        document.getElementById('stat-vacant-pct').innerText = `${vacPct}% Vacant`;
+
+        // 4. Update Donut Chart
+        const donut = document.getElementById('occupancy-donut');
+        if (donut) {
+            donut.style.background = `conic-gradient(var(--teal-main) 0% ${occPct}%, #eee ${occPct}% 100%)`;
+            document.getElementById('donut-pct').innerText = `${occPct}%`;
+        }
+        document.getElementById('legend-occupied').innerText = stats.occupied || 0;
+        document.getElementById('legend-vacant').innerText = stats.available || 0;
+
+        // 5. Populate Units Snapshot (First 5)
+        const aptRes = await fetch(`${API_URL}/apartments`);
+        const apartments = await aptRes.json();
+        const snapshotBody = document.getElementById('snapshot-table-body');
+        
+        if (snapshotBody) {
+            snapshotBody.innerHTML = apartments.slice(0, 5).map(a => `
+                <tr>
+                    <td style="font-weight: 700;">Unit ${a.apartmentNumber}</td>
+                    <td>${a.type}</td>
+                    <td>${a.block}</td>
+                    <td>
+                        <span style="background: ${a.status === 'Occupied' ? '#e6f7ef' : '#fff1f0'}; color: ${a.status === 'Occupied' ? '#27ae60' : '#ff4757'}; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600;">
+                            ${a.status}
+                        </span>
+                    </td>
+                    <td style="color: #666;">${a.occupantName || '—'}</td>
+                </tr>
+            `).join('');
+        }
+    } catch (err) {
+        console.error('Error refreshing dashboard:', err);
+    }
 }
 
 async function renderMyApartment() {
@@ -307,18 +401,30 @@ async function renderMyApartment() {
     `;
 }
 
-// Dashboard & Login Logic
-function showDashboard() {
-    localStorage.removeItem('userRole'); // Reset if changing role
-    document.getElementById('dashboard-overlay').style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // prevent scrolling behind
-}
-
 function selectRole(role) {
     localStorage.setItem('userRole', role); // Save role to persist across reloads
     changeMode(role);
-    document.getElementById('dashboard-overlay').style.display = 'none';
+    
+    // Update Navbar Buttons
+    const loginBtn = document.getElementById('nav-login-btn');
+    const logoutBtn = document.getElementById('nav-logout-btn');
+    
+    if (role === 'guest') {
+        if (loginBtn) loginBtn.style.display = 'block';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+    } else {
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'block';
+    }
+    
     document.body.style.overflow = 'auto'; // restore scrolling
+}
+
+function logout() {
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('currentUser');
+    currentUser = null;
+    window.location.href = '/'; // Reset to guest home
 }
 
 function openLoginModal(role) {

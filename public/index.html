@@ -14,34 +14,6 @@
   </head>
   <body>
     <!-- Dashboard Overlay -->
-    <div id="dashboard-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--gray-bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-      <h1 style="color: var(--teal-main); margin-bottom: 0.5rem; font-size: 2.5rem;">LNMIIT Housing Portal</h1>
-      <p style="color: var(--text-light); margin-bottom: 3rem; letter-spacing: 1px;">SELECT YOUR ROLE TO CONTINUE</p>
-      
-      <div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; max-width: 900px; width: 90%;">
-        
-        <!-- Admin Card -->
-        <div class="role-card" onclick="openLoginModal('admin')" style="background: #fff; padding: 3rem 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; cursor: pointer; transition: 0.3s; flex: 1; min-width: 250px; border: 2px solid transparent;">
-          <img src="https://img.icons8.com/ios/100/008080/admin-settings-male.png" style="margin-bottom: 1.5rem;" />
-          <h2 style="color: var(--teal-main); margin-bottom: 0.5rem;">Admin</h2>
-          <p style="font-size: 0.85rem; color: var(--text-light);">Manage apartments, inventory, and user allotments.</p>
-        </div>
-
-        <!-- User Card -->
-        <div class="role-card" onclick="openLoginModal('user')" style="background: #fff; padding: 3rem 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; cursor: pointer; transition: 0.3s; flex: 1; min-width: 250px; border: 2px solid transparent;">
-          <img src="https://img.icons8.com/ios/100/008080/user--v1.png" style="margin-bottom: 1.5rem;" />
-          <h2 style="color: var(--teal-main); margin-bottom: 0.5rem;">User</h2>
-          <p style="font-size: 0.85rem; color: var(--text-light);">Log in to view your current allotments and status.</p>
-        </div>
-
-        <!-- Guest Card -->
-        <div class="role-card" onclick="selectRole('guest')" style="background: #fff; padding: 3rem 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; cursor: pointer; transition: 0.3s; flex: 1; min-width: 250px; border: 2px solid transparent;">
-          <img src="https://img.icons8.com/ios/100/008080/guest-male.png" style="margin-bottom: 1.5rem;" />
-          <h2 style="color: var(--teal-main); margin-bottom: 0.5rem;">Guest</h2>
-          <p style="font-size: 0.85rem; color: var(--text-light);">Browse available apartments and send inquiries.</p>
-        </div>
-      </div>
-    </div>
 
     <!-- Login Modal -->
     <div id="loginModal" class="modal" style="z-index: 10000;">
@@ -80,8 +52,11 @@
         <li><a href="#inventory">Apartments</a></li>
       </ul>
       <div class="nav-actions">
-        <button class="flash-btn" onclick="showDashboard()" style="margin-right: 15px;">
-          CHANGE ROLE
+        <button id="nav-login-btn" class="flash-btn" onclick="openLoginModal('user')" style="margin-right: 15px;">
+          LOGIN
+        </button>
+        <button id="nav-logout-btn" class="flash-btn" onclick="logout()" style="margin-right: 15px; display: none; background: #ff4757; border-color: #ff4757;">
+          LOGOUT
         </button>
         <button class="flash-btn admin-only" id="add-unit-btn" onclick="showModal('addModal')" style="display: none;">
           ADD UNIT
@@ -174,7 +149,148 @@
       </div>
     </section>
 
-    <!-- Map Section -->
+    <!-- Admin Dashboard (Replaces Map for Admin) -->
+    <section id="admin-dashboard" class="dashboard-section" style="display: none; padding: 2rem; background: #f4f7f6; min-height: 100vh;">
+      <!-- Stats Cards Row -->
+      <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="stat-card" style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
+          <div style="background: #e6f7ef; padding: 1rem; border-radius: 10px;"><img src="https://img.icons8.com/ios-filled/50/27ae60/apartment.png" width="30"/></div>
+          <div>
+            <p style="color: #666; font-size: 0.9rem; margin: 0;">Total Apartments</p>
+            <h2 id="stat-total" style="font-size: 1.8rem; margin: 0.2rem 0;">0</h2>
+            <p style="color: #999; font-size: 0.75rem; margin: 0;">All Registered Units</p>
+          </div>
+        </div>
+        <div class="stat-card" style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
+          <div style="background: #e8f0fe; padding: 1rem; border-radius: 10px;"><img src="https://img.icons8.com/ios-filled/50/3498db/group.png" width="30"/></div>
+          <div>
+            <p style="color: #666; font-size: 0.9rem; margin: 0;">Occupied</p>
+            <h2 id="stat-occupied" style="font-size: 1.8rem; margin: 0.2rem 0;">0</h2>
+            <p id="stat-occupied-pct" style="color: #3498db; font-size: 0.75rem; font-weight: 600; margin: 0;">0% Occupied</p>
+          </div>
+        </div>
+        <div class="stat-card" style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
+          <div style="background: #fff4e5; padding: 1rem; border-radius: 10px;"><img src="https://img.icons8.com/ios-filled/50/f39c12/door.png" width="30"/></div>
+          <div>
+            <p style="color: #666; font-size: 0.9rem; margin: 0;">Vacant</p>
+            <h2 id="stat-vacant" style="font-size: 1.8rem; margin: 0.2rem 0;">0</h2>
+            <p id="stat-vacant-pct" style="color: #f39c12; font-size: 0.75rem; font-weight: 600; margin: 0;">0% Vacant</p>
+          </div>
+        </div>
+        <div class="stat-card" style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
+          <div style="background: #f3e5f5; padding: 1rem; border-radius: 10px;"><img src="https://img.icons8.com/ios-filled/50/9b59b6/checked-user-male.png" width="30"/></div>
+          <div>
+            <p style="color: #666; font-size: 0.9rem; margin: 0;">Faculty</p>
+            <h2 id="stat-faculty" style="font-size: 1.8rem; margin: 0.2rem 0;">0</h2>
+            <p style="color: #9b59b6; font-size: 0.75rem; font-weight: 600; margin: 0;">Registered Accounts</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle Row: Analytics & Activities -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 300px; gap: 1.5rem; margin-bottom: 2rem;">
+        <!-- Occupancy Donut (Simulated with CSS) -->
+        <div class="card" style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+          <h3 style="margin-bottom: 2rem; color: #333;">Occupancy Overview</h3>
+          <div style="display: flex; align-items: center; gap: 3rem;">
+             <div id="occupancy-donut" style="width: 180px; height: 180px; border-radius: 50%; background: conic-gradient(var(--teal-main) 0% 70%, #eee 70% 100%); position: relative; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 130px; height: 130px; background: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                  <span id="donut-pct" style="font-size: 1.8rem; font-weight: 700; color: #333;">70%</span>
+                  <span style="font-size: 0.8rem; color: #999;">Occupied</span>
+                </div>
+             </div>
+             <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                  <div style="width: 12px; height: 12px; border-radius: 50%; background: var(--teal-main);"></div>
+                  <span style="color: #666;">Occupied</span>
+                  <strong id="legend-occupied">0</strong>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                  <div style="width: 12px; height: 12px; border-radius: 50%; background: #eee;"></div>
+                  <span style="color: #666;">Vacant</span>
+                  <strong id="legend-vacant">0</strong>
+                </div>
+             </div>
+          </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="card" style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="color: #333; margin: 0;">Recent Activities</h3>
+            <a href="#" style="color: var(--teal-main); font-size: 0.85rem; font-weight: 600; text-decoration: none;">View all</a>
+          </div>
+          <div id="activities-list" style="display: flex; flex-direction: column; gap: 1.2rem;">
+            <!-- Dummy activity entries -->
+            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+              <div style="background: #e6f7ef; padding: 0.5rem; border-radius: 50%;"><img src="https://img.icons8.com/ios-filled/20/27ae60/add-user-group-man-man.png"/></div>
+              <div>
+                <p style="font-size: 0.85rem; margin: 0; color: #333;">New faculty registered: Dr. A. Jain</p>
+                <span style="font-size: 0.75rem; color: #999;">Just now</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+              <div style="background: #e8f0fe; padding: 0.5rem; border-radius: 50%;"><img src="https://img.icons8.com/ios-filled/20/3498db/home.png"/></div>
+              <div>
+                <p style="font-size: 0.85rem; margin: 0; color: #333;">Unit 102 (Block A) Allotted</p>
+                <span style="font-size: 0.75rem; color: #999; ">15 mins ago</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+              <div style="background: #fff4e5; padding: 0.5rem; border-radius: 50%;"><img src="https://img.icons8.com/ios-filled/20/f39c12/settings.png"/></div>
+              <div>
+                <p style="font-size: 0.85rem; margin: 0; color: #333;">Facility status updated: Water (Block A)</p>
+                <span style="font-size: 0.75rem; color: #999;">1 hour ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Panel -->
+        <div class="card" style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+          <h3 style="margin-bottom: 1.5rem; color: #333;">Quick Actions</h3>
+          <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+            <button onclick="showModal('addModal')" style="display: flex; align-items: center; gap: 1rem; width: 100%; padding: 1rem; background: #f8f9fa; border: 1px solid #eee; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.3s;" onmouseover="this.style.background='#eef2f3'">
+              <img src="https://img.icons8.com/ios/50/008080/plus.png" width="20"/>
+              <span style="font-weight: 600; color: #555;">Add New Apartment</span>
+            </button>
+            <button onclick="showModal('addFacultyModal')" style="display: flex; align-items: center; gap: 1rem; width: 100%; padding: 1rem; background: #f8f9fa; border: 1px solid #eee; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.3s;" onmouseover="this.style.background='#eef2f3'">
+              <img src="https://img.icons8.com/ios/50/008080/add-user-male.png" width="20"/>
+              <span style="font-weight: 600; color: #555;">Add Faculty</span>
+            </button>
+            <button onclick="openFacilitiesModal()" style="display: flex; align-items: center; gap: 1rem; width: 100%; padding: 1rem; background: #f8f9fa; border: 1px solid #eee; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.3s;" onmouseover="this.style.background='#eef2f3'">
+              <img src="https://img.icons8.com/ios/50/008080/wrench.png" width="20"/>
+              <span style="font-weight: 600; color: #555;">Manage Facilities</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row: Units Snapshot -->
+      <div class="card" style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h3 style="color: #333; margin: 0;">Units Snapshot</h3>
+          <button onclick="openManageApartments()" style="background: transparent; border: none; color: var(--teal-main); font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">View all apartments <img src="https://img.icons8.com/ios/50/008080/long-arrow-right.png" width="16"/></button>
+        </div>
+        <div class="admin-table-wrapper" style="margin: 0; box-shadow: none;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Unit No.</th>
+                <th>Type</th>
+                <th>Block</th>
+                <th>Status</th>
+                <th>Allotted To</th>
+              </tr>
+            </thead>
+            <tbody id="snapshot-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section id="map-info" class="map-section">
       <div class="map-container">
         <div class="map-text">
