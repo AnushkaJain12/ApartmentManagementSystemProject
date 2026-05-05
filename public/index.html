@@ -67,7 +67,12 @@
 
     <!-- Navigation Bar -->
     <nav class="glass-nav">
-      <div class="logo">LNMIIT<span>HOUSING</span></div>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="hamburger-icon" onclick="toggleHamburger()" style="cursor: pointer;">
+          <img src="https://img.icons8.com/ios-filled/50/ffffff/menu--v1.png" width="28" />
+        </div>
+        <div class="logo">LNMIIT<span>HOUSING</span></div>
+      </div>
       <ul class="nav-links" id="nav-links">
         <li><a href="#" class="active">Home</a></li>
         <li><a href="#map-info">Campus Map</a></li>
@@ -76,9 +81,6 @@
       <div class="nav-actions">
         <button class="flash-btn" onclick="showDashboard()" style="margin-right: 15px;">
           CHANGE ROLE
-        </button>
-        <button class="flash-btn admin-only" id="inquiries-btn" onclick="openAdminInquiries()" style="display: none; margin-right: 15px; background: var(--teal-dark);">
-          INQUIRIES
         </button>
         <button class="flash-btn admin-only" id="add-unit-btn" onclick="showModal('addModal')" style="display: none;">
           ADD UNIT
@@ -130,18 +132,6 @@
           <img src="https://img.icons8.com/ios/50/008080/checklist.png" />
         </div>
         <p>Show All</p>
-      </div>
-      <div class="cat-item filter-btn" onclick="filterByStatus('Available')" id="available-filter-btn">
-        <div class="cat-icon">
-          <img src="https://img.icons8.com/ios/50/008080/ok.png" />
-        </div>
-        <p>Available</p>
-      </div>
-      <div class="cat-item filter-btn" onclick="filterByStatus('Occupied')" id="occupied-filter-btn">
-        <div class="cat-icon">
-          <img src="https://img.icons8.com/ios/50/008080/cancel.png" />
-        </div>
-        <p>Occupied</p>
       </div>
       <div class="cat-item" onclick="filterByBlock('Professor Housing')">
         <div class="cat-icon">
@@ -504,6 +494,30 @@
       </div>
     </div>
 
+    <!-- Left Hamburger Drawer -->
+    <div id="hamburger-drawer" class="sidebar" style="right: auto; left: -400px; transition: left 0.4s ease;">
+      <div class="sidebar-header" style="background: var(--teal-dark);">
+        <h2>Quick Filters</h2>
+        <span class="close-sidebar" onclick="toggleHamburger()">&times;</span>
+      </div>
+      <div class="sidebar-content" style="padding: 0;">
+        <ul style="list-style: none; margin: 0; padding: 0;">
+          <li onclick="filterByStatus('Available'); toggleHamburger();" style="padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.3s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'">
+            <img src="https://img.icons8.com/ios/50/008080/ok.png" width="24" />
+            <span style="font-weight: 600; color: var(--text-dark);">Available Apartments</span>
+          </li>
+          <li onclick="filterByStatus('Occupied'); toggleHamburger();" style="padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.3s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'">
+            <img src="https://img.icons8.com/ios/50/008080/cancel.png" width="24" />
+            <span style="font-weight: 600; color: var(--text-dark);">Occupied Apartments</span>
+          </li>
+          <li id="hamburger-inquiries-btn" onclick="openAdminInquiries(); toggleHamburger();" style="display: none; padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; align-items: center; gap: 1rem; transition: 0.3s; background: var(--teal-light);" onmouseover="this.style.background='#b2dfdb'" onmouseout="this.style.background='var(--teal-light)'">
+            <img src="https://img.icons8.com/ios-filled/50/008080/chat.png" width="24" />
+            <span style="font-weight: 700; color: var(--teal-dark);">Admin Inquiries</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
     <!-- Floating Inquiry Button -->
     <button id="floating-inquiry-btn" class="floating-btn" onclick="openSidebar()" style="display: none;">
       <img src="https://img.icons8.com/ios-filled/50/ffffff/chat.png" width="24" />
@@ -547,11 +561,11 @@
 
     <!-- Admin Inquiries Modal -->
     <div id="adminInquiriesModal" class="modal">
-      <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-content" style="max-width: 100%; width: 100%; height: 100vh; margin: 0; border-radius: 0; display: flex; flex-direction: column;">
         <span class="close" onclick="hideModal('adminInquiriesModal')">&times;</span>
         <h2>Guest & User Inquiries</h2>
         <p style="color: var(--text-light); margin-bottom: 2rem;">Manage inquiries sent via the Inquiry Sidebar.</p>
-        <div id="admin-inquiries-list" style="max-height: 400px; overflow-y: auto;">
+        <div id="admin-inquiries-list" style="flex: 1; overflow-y: auto;">
           <!-- Dynamic Inquiries -->
         </div>
       </div>

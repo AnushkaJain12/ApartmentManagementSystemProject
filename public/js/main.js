@@ -40,8 +40,14 @@ window.addEventListener('scroll', () => {
 
 // Load Data
 document.addEventListener('DOMContentLoaded', () => {
-    // Show dashboard initially and prevent scrolling
-    showDashboard();
+    // Check local storage for saved role to persist across reloads
+    const savedRole = localStorage.getItem('userRole');
+    if (savedRole) {
+        selectRole(savedRole);
+    } else {
+        // Show dashboard initially and prevent scrolling
+        showDashboard();
+    }
     fetchApartments();
 
     // Mobile Menu Toggle
@@ -141,17 +147,16 @@ function showAllApartments() {
 function changeMode(mode) {
     currentMode = mode;
     const addBtn = document.getElementById('add-unit-btn');
-    const availableFilterBtn = document.getElementById('available-filter-btn');
-    const inquiriesBtn = document.getElementById('inquiries-btn');
+    const hamburgerInquiriesBtn = document.getElementById('hamburger-inquiries-btn');
     const inquiryBtn = document.getElementById('floating-inquiry-btn');
     
     if (mode === 'admin') {
         addBtn.style.display = 'block';
-        inquiriesBtn.style.display = 'block';
+        hamburgerInquiriesBtn.style.display = 'flex';
         inquiryBtn.style.display = 'none';
     } else {
         addBtn.style.display = 'none';
-        inquiriesBtn.style.display = 'none';
+        hamburgerInquiriesBtn.style.display = 'none';
         inquiryBtn.style.display = 'flex'; // show floating inquiry button
     }
     
@@ -161,11 +166,13 @@ function changeMode(mode) {
 
 // Dashboard & Login Logic
 function showDashboard() {
+    localStorage.removeItem('userRole'); // Reset if changing role
     document.getElementById('dashboard-overlay').style.display = 'flex';
     document.body.style.overflow = 'hidden'; // prevent scrolling behind
 }
 
 function selectRole(role) {
+    localStorage.setItem('userRole', role); // Save role to persist across reloads
     changeMode(role);
     document.getElementById('dashboard-overlay').style.display = 'none';
     document.body.style.overflow = 'auto'; // restore scrolling
@@ -252,6 +259,15 @@ function openSidebar() {
 
 function closeSidebar() {
     document.getElementById('inquiry-sidebar').classList.remove('open');
+}
+
+function toggleHamburger() {
+    const drawer = document.getElementById('hamburger-drawer');
+    if (drawer.style.left === '0px') {
+        drawer.style.left = '-400px';
+    } else {
+        drawer.style.left = '0px';
+    }
 }
 
 // Inventory Logic

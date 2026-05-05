@@ -48,6 +48,10 @@ body {
     color: var(--teal-main) !important;
 }
 
+.glass-nav.scrolled .hamburger-icon img {
+    filter: invert(29%) sepia(96%) saturate(1637%) hue-rotate(151deg) brightness(91%) contrast(101%);
+}
+
 .logo {
     font-size: 1.4rem;
     font-weight: 800;
