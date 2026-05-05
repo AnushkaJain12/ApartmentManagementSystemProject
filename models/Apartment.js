@@ -44,12 +44,17 @@ const apartmentSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    facultyId: {
+        type: String,
+        default: null
+    },
     allotmentDate: {
         type: Date,
         default: null
     },
     allotmentHistory: [{
         occupantName: String,
+    facultyId: String,
         allotmentDate: Date,
         vacatedDate: { type: Date, default: Date.now }
     }]

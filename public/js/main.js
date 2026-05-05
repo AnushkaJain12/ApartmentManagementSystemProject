@@ -5,6 +5,7 @@ const apartmentGrid = document.getElementById('apartment-grid');
 const searchInput = document.getElementById('search-input');
 let allApartments = [];
 let currentMode = 'guest'; // default mode
+let currentUser = null; // store current logged in username
 let submittedInquiries = []; // store inquiries
 let facilitiesData = {}; // store facilities status per block
 
@@ -49,6 +50,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show dashboard initially and prevent scrolling
         showDashboard();
     }
+    // Status Filter Dropdown
+    const statusFilter = document.getElementById('status-filter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', (e) => {
+            const val = e.target.value;
+            // Change text color of the select based on selected value
+            if (val === 'Available') e.target.style.color = '#27ae60';
+            else if (val === 'Occupied') e.target.style.color = '#ff4757';
+            else if (val === 'Maintenance') e.target.style.color = '#f1c40f';
+            else e.target.style.color = 'var(--text-dark)';
+
+            if (val === 'all') {
+                renderApartments(allApartments);
+            } else {
+                filterByStatus(val);
+            }
+        });
+    }
+
     fetchApartments();
 
     // Mobile Menu Toggle
@@ -114,7 +134,7 @@ function renderApartments(apartments) {
 
                 <div style="display: flex; gap: 0.5rem;">
                     ${currentMode === 'admin' ? `
-                        <button class="btn-teal" style="flex: 1.5; padding: 0.6rem; font-size: 0.8rem;" onclick="openAllotModal('${apt._id}', '${apt.occupantName || ''}', '${apt.status}', '${apt.allotmentDate || ''}')">MANAGE</button>
+                        <button class="btn-teal" style="flex: 1.5; padding: 0.6rem; font-size: 0.8rem;" onclick="openAllotModal('${apt._id}', '${apt.occupantName || ''}', '${apt.status}', '${apt.allotmentDate || ''}', '${apt.facultyId || ''}')">MANAGE</button>
                         <button class="btn-teal" style="flex: 1; padding: 0.6rem; font-size: 0.8rem; background: var(--teal-dark);" onclick="openInventoryModal('${apt._id}', '${apt.apartmentNumber}')">ITEMS</button>
                         <button style="border: 1px solid #ddd; background: transparent; padding: 0.6rem; border-radius: 4px; cursor: pointer;" onclick="deleteApartment('${apt._id}')">
                             <img src="https://img.icons8.com/ios/50/ff4757/delete-forever.png" width="18"/>
@@ -151,21 +171,140 @@ function changeMode(mode) {
     const hamburgerInquiriesBtn = document.getElementById('hamburger-inquiries-btn');
     const hamburgerFacilitiesBtn = document.getElementById('hamburger-facilities-btn');
     const inquiryBtn = document.getElementById('floating-inquiry-btn');
+    const hamburgerIcon = document.getElementById('hamburger-menu-icon');
+    const myAptLink = document.getElementById('my-apt-link');
+    const myAptSection = document.getElementById('my-apartment');
     
     if (mode === 'admin') {
         addBtn.style.display = 'block';
         hamburgerInquiriesBtn.style.display = 'flex';
         hamburgerFacilitiesBtn.style.display = 'flex';
         inquiryBtn.style.display = 'none';
+        if (hamburgerIcon) hamburgerIcon.style.display = 'block';
+        if (myAptLink) myAptLink.style.display = 'none';
+        if (myAptSection) myAptSection.style.display = 'none';
+    } else if (mode === 'user') {
+        addBtn.style.display = 'none';
+        hamburgerInquiriesBtn.style.display = 'none';
+        hamburgerFacilitiesBtn.style.display = 'none';
+        inquiryBtn.style.display = 'flex';
+        if (hamburgerIcon) hamburgerIcon.style.display = 'none';
+        if (myAptLink) myAptLink.style.display = 'block';
+        if (myAptSection) {
+            myAptSection.style.display = 'block';
+            renderMyApartment();
+        }
     } else {
         addBtn.style.display = 'none';
         hamburgerInquiriesBtn.style.display = 'none';
         hamburgerFacilitiesBtn.style.display = 'none';
-        inquiryBtn.style.display = 'flex'; // show floating inquiry button
+        inquiryBtn.style.display = 'flex';
+        if (hamburgerIcon) hamburgerIcon.style.display = 'none';
+        if (myAptLink) myAptLink.style.display = 'none';
+        if (myAptSection) myAptSection.style.display = 'none';
     }
     
     // Re-render apartments to show/hide admin buttons
     renderApartments(allApartments);
+}
+
+async function renderMyApartment() {
+    const container = document.getElementById('my-apt-container');
+    if (!currentUser) {
+        container.innerHTML = '<p style="text-align: center; padding: 2rem;">Please log in to view your details.</p>';
+        return;
+    }
+
+    // Find apartment where facultyId matches currentUser
+    const myApt = allApartments.find(apt => 
+        (apt.facultyId || '').toLowerCase() === currentUser.toLowerCase()
+    );
+
+    if (!myApt) {
+        container.innerHTML = `
+            <div style="background: #fff; padding: 3rem; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                <img src="https://img.icons8.com/ios/100/008080/info.png" style="margin-bottom: 1rem;" />
+                <h3 style="color: var(--teal-main);">No Allotment Found</h3>
+                <p style="color: var(--text-light);">We couldn't find an apartment assigned to "${currentUser}". <br> If you believe this is an error, please contact the Admin.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Fetch inventory for this apartment
+    const invRes = await fetch(`${API_URL}/inventory/${myApt._id}`);
+    const inventory = await invRes.json();
+    
+    // Get facilities for this block
+    const facilities = facilitiesData[myApt.block] || { water: 'Available', electricity: 'Available', internet: 'Available', parking: 'Available' };
+
+    container.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; flex-wrap: wrap;">
+            <!-- Unit Card -->
+            <div style="background: #fff; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                    <div>
+                        <p style="color: var(--flash-teal); font-weight: 700; font-size: 0.75rem;">${myApt.block.toUpperCase()}</p>
+                        <h2 style="font-size: 2rem;">Unit ${myApt.apartmentNumber}</h2>
+                    </div>
+                    <span class="status-label status-Occupied">ALLOTTED</span>
+                </div>
+                
+                <div style="margin-bottom: 2rem;">
+                    <p style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 0.5rem;">AMENITIES INCLUDED</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        ${(myApt.amenities || []).map(a => `<span style="background: var(--teal-light); color: var(--teal-main); font-size: 0.7rem; padding: 0.3rem 0.8rem; border-radius: 50px; font-weight: 600;">${a}</span>`).join('')}
+                    </div>
+                </div>
+
+                <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 10px;">
+                    <p style="font-size: 0.75rem; color: var(--text-light); margin-bottom: 0.2rem;">REGISTERED OCCUPANT</p>
+                    <h3 style="color: var(--teal-main);">${myApt.occupantName}</h3>
+                    <p style="font-size: 0.8rem; color: #999; margin-top: 0.5rem;">Allotted on: ${new Date(myApt.allotmentDate).toLocaleDateString()}</p>
+                </div>
+            </div>
+
+            <!-- Facilities & Inventory Card -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <!-- Facilities -->
+                <div style="background: #fff; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                        <img src="https://img.icons8.com/ios-filled/50/008080/settings.png" width="24" />
+                        Facility Status
+                    </h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        ${Object.entries(facilities).map(([key, status]) => `
+                            <div style="padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+                                <p style="font-size: 0.7rem; color: #999; text-transform: uppercase;">${key}</p>
+                                <strong style="color: ${status === 'Available' ? '#2ecc71' : '#e74c3c'}; font-size: 0.9rem;">${status}</strong>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Inventory -->
+                <div style="background: #fff; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                        <img src="https://img.icons8.com/ios-filled/50/008080/box.png" width="24" />
+                        Unit Inventory
+                    </h3>
+                    ${inventory.length === 0 ? '<p style="color: #999; font-size: 0.85rem;">No inventory items recorded.</p>' : `
+                        <ul style="list-style: none; padding: 0;">
+                            ${inventory.map(item => `
+                                <li style="display: flex; justify-content: space-between; padding: 0.8rem 0; border-bottom: 1px solid #eee;">
+                                    <div>
+                                        <strong style="font-size: 0.9rem;">${item.itemName}</strong>
+                                        <p style="font-size: 0.75rem; color: #999;">Qty: ${item.quantity}</p>
+                                    </div>
+                                    <span style="font-size: 0.75rem; color: ${item.condition === 'Damaged' ? '#ff4757' : '#2ecc71'};">${item.condition}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    `}
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 // Dashboard & Login Logic
@@ -190,19 +329,92 @@ function openLoginModal(role) {
     showModal('loginModal');
 }
 
-document.getElementById('login-form').addEventListener('submit', (e) => {
+document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const role = document.getElementById('login-role').value;
-    const user = document.getElementById('login-username').value;
-    const pass = document.getElementById('login-password').value;
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
     
-    // Simple mock authentication
-    if ((role === 'admin' && user === 'admin' && pass === 'admin') ||
-        (role === 'user' && user === 'user' && pass === 'user')) {
-        hideModal('loginModal');
-        selectRole(role);
-    } else {
-        document.getElementById('login-error').style.display = 'block';
+    try {
+        const res = await fetch(`${API_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, role })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            currentUser = username;
+            localStorage.setItem('currentUser', username);
+            localStorage.setItem('userRole', data.role);
+            
+            hideModal('loginModal');
+            
+            if (data.firstLogin) {
+                showModal('changePasswordModal');
+            } else {
+                selectRole(data.role);
+            }
+        } else {
+            const err = await res.json();
+            document.getElementById('login-error').innerText = err.message || 'Login failed';
+            document.getElementById('login-error').style.display = 'block';
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Connection error');
+    }
+});
+
+document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const newPass = document.getElementById('new-password').value;
+    const confirmPass = document.getElementById('confirm-password').value;
+    
+    if (newPass !== confirmPass) {
+        alert('Passwords do not match');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/faculty/change-password`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ facultyId: currentUser, newPassword: newPass })
+        });
+
+        if (res.ok) {
+            alert('Password updated successfully!');
+            hideModal('changePasswordModal');
+            selectRole('user');
+        }
+    } catch (err) {
+        alert('Error updating password');
+    }
+});
+
+document.getElementById('add-faculty-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+        const res = await fetch(`${API_URL}/faculty`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            alert('Faculty account created successfully!');
+            hideModal('addFacultyModal');
+            openTenantsPage(); // Refresh table
+        } else {
+            const err = await res.json();
+            alert(err.message);
+        }
+    } catch (err) {
+        alert('Error creating account');
     }
 });
 
@@ -240,8 +452,9 @@ function hideModal(id) {
     document.body.classList.remove('no-scroll');
 }
 
-function openAllotModal(id, name, status, date) {
+function openAllotModal(id, name, status, date, facultyId) {
     document.getElementById('edit-id').value = id;
+    document.getElementById('edit-faculty-id').value = facultyId && facultyId !== 'undefined' ? facultyId : '';
     document.getElementById('edit-name').value = name && name !== 'undefined' ? name : '';
     document.getElementById('edit-status').value = status;
     
@@ -604,4 +817,137 @@ function saveFacilities() {
     
     alert(`Facilities status for ${block} updated successfully!`);
     hideModal('facilitiesModal');
+}
+
+// Management Pages Logic
+async function openTenantsPage() {
+    const res = await fetch(`${API_URL}/faculty`);
+    const faculties = await res.json();
+    
+    const container = document.getElementById('tenants-table-container');
+    container.innerHTML = `
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Faculty ID</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Department</th>
+                    <th>First Login</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${faculties.map(f => `
+                    <tr>
+                        <td style="font-weight: 700;">${f.facultyId}</td>
+                        <td style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                <img src="https://img.icons8.com/ios-filled/50/999/user-male-circle.png" width="30"/>
+                            </div>
+                            <strong>${f.name}</strong>
+                        </td>
+                        <td>${f.role}</td>
+                        <td>${f.department}</td>
+                        <td>
+                            <span style="color: ${f.firstLogin ? '#ff9f43' : '#27ae60'}; font-weight: 600;">
+                                ${f.firstLogin ? 'Pending' : 'Completed'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    showModal('tenantsPage');
+}
+
+async function openGlobalInventory() {
+    const res = await fetch(`${API_URL}/inventory`);
+    const items = await res.json();
+    
+    const container = document.getElementById('global-inventory-table-container');
+    container.innerHTML = `
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Apartment</th>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Condition</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${items.map(item => `
+                    <tr>
+                        <td>Unit ${item.apartmentId ? item.apartmentId.apartmentNumber : 'N/A'}</td>
+                        <td style="font-weight: 600;">${item.itemName}</td>
+                        <td>${item.quantity}</td>
+                        <td>
+                            <span style="background: ${item.condition === 'Good' ? '#e6f7ef' : '#fff1f0'}; color: ${item.condition === 'Good' ? '#27ae60' : '#ff4757'}; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">
+                                ${item.condition}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                <button class="action-icon-btn" onclick="editItem('${item._id}', '${item.itemName}', ${item.quantity}, '${item.condition}', '${item.apartmentId ? item.apartmentId._id : ''}'); hideModal('globalInventoryPage');">
+                                    <img src="https://img.icons8.com/ios/50/008080/edit.png" width="18"/>
+                                </button>
+                                <button class="action-icon-btn" onclick="deleteItem('${item._id}', '${item.apartmentId ? item.apartmentId._id : ''}'); hideModal('globalInventoryPage');">
+                                    <img src="https://img.icons8.com/ios/50/ff4757/delete-forever.png" width="18"/>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    showModal('globalInventoryPage');
+}
+
+async function openManageApartments() {
+    const res = await fetch(`${API_URL}/apartments`);
+    const all = await res.json();
+    
+    const container = document.getElementById('apartments-table-container');
+    container.innerHTML = `
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Apartment ID</th>
+                    <th>Type</th>
+                    <th>Capacity</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${all.map(a => `
+                    <tr>
+                        <td style="font-weight: 700;">Unit ${a.apartmentNumber}</td>
+                        <td>${a.type}</td>
+                        <td>${a.capacity} People</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 8px; height: 8px; border-radius: 50%; background: ${a.status === 'Occupied' ? '#27ae60' : (a.status === 'Maintenance' ? '#f1c40f' : '#ff9f43')};"></div>
+                                <span style="color: ${a.status === 'Occupied' ? '#27ae60' : (a.status === 'Maintenance' ? '#f1c40f' : '#ff9f43')}; font-weight: 600;">${a.status}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                <button class="action-icon-btn" onclick="openAllotModal('${a._id}', '${a.occupantName || ''}', '${a.status}', '${a.allotmentDate || ''}', '${a.facultyId || ''}'); hideModal('manageApartmentsPage');">
+                                    <img src="https://img.icons8.com/ios/50/008080/edit.png" width="18"/>
+                                </button>
+                                <button class="action-icon-btn" onclick="deleteApartment('${a._id}'); hideModal('manageApartmentsPage');">
+                                    <img src="https://img.icons8.com/ios/50/ff4757/delete-forever.png" width="18"/>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    showModal('manageApartmentsPage');
 }

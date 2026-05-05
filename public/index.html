@@ -68,13 +68,14 @@
     <!-- Navigation Bar -->
     <nav class="glass-nav">
       <div style="display: flex; align-items: center; gap: 1rem;">
-        <div class="hamburger-icon" onclick="toggleHamburger()" style="cursor: pointer;">
+        <div id="hamburger-menu-icon" class="hamburger-icon" onclick="toggleHamburger()" style="cursor: pointer;">
           <img src="https://img.icons8.com/ios-filled/50/ffffff/menu--v1.png" width="28" />
         </div>
         <div class="logo">LNMIIT<span>HOUSING</span></div>
       </div>
       <ul class="nav-links" id="nav-links">
         <li><a href="#" class="active">Home</a></li>
+        <li><a href="#my-apartment" id="my-apt-link" style="display: none;">My Apartment</a></li>
         <li><a href="#map-info">Campus Map</a></li>
         <li><a href="#inventory">Apartments</a></li>
       </ul>
@@ -220,12 +221,31 @@
 
     <!-- Apartment Inventory -->
     <section id="inventory" class="inventory-new">
-      <div class="section-title">
-        <h2>Available Residences</h2>
-        <p>CURRENT VACANCIES & OCCUPANCY STATUS</p>
+      <div class="section-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 3rem;">
+        <div>
+          <h2>Available Residences</h2>
+          <p>CURRENT VACANCIES & OCCUPANCY STATUS</p>
+        </div>
+        <select id="status-filter" style="padding: 0.8rem 1.5rem; border-radius: 50px; border: 2px solid #eee; font-weight: 700; outline: none; cursor: pointer; font-family: 'Outfit', sans-serif; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; height: fit-content;">
+          <option value="all" style="color: var(--text-dark);">All Residences</option>
+          <option value="Available" style="color: #27ae60;">Available</option>
+          <option value="Occupied" style="color: #ff4757;">Occupied</option>
+          <option value="Maintenance" style="color: #f1c40f;">Maintenance</option>
+        </select>
       </div>
       <div class="apartment-grid" id="apartment-grid">
         <!-- Dynamic data -->
+      </div>
+    </section>
+
+    <!-- My Apartment Section (User Only) -->
+    <section id="my-apartment" class="inventory-new" style="display: none; background: #f4f7f6; padding: 4rem 2rem;">
+      <div class="section-title">
+        <h2>My Allotment</h2>
+        <p>PERSONAL UNIT DETAILS & FACILITY STATUS</p>
+      </div>
+      <div id="my-apt-container" style="max-width: 1000px; margin: 0 auto;">
+        <!-- Dynamically populated -->
       </div>
     </section>
 
@@ -340,12 +360,17 @@
         <form id="allot-form">
           <input type="hidden" name="id" id="edit-id" />
           <div class="form-group">
-            <label>Faculty Name</label>
+            <label>Faculty ID (Link to Account)</label>
+            <input type="text" name="facultyId" id="edit-faculty-id" placeholder="e.g. F001" style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+          </div>
+          <div class="form-group">
+            <label>Faculty Name (Display)</label>
             <input
               type="text"
               name="occupantName"
               id="edit-name"
               oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')"
+              style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;"
             />
           </div>
           <div class="form-group">
@@ -502,14 +527,6 @@
       </div>
       <div class="sidebar-content" style="padding: 0;">
         <ul style="list-style: none; margin: 0; padding: 0;">
-          <li onclick="filterByStatus('Available'); toggleHamburger();" style="padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.3s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'">
-            <img src="https://img.icons8.com/ios/50/008080/ok.png" width="24" />
-            <span style="font-weight: 600; color: var(--text-dark);">Available Apartments</span>
-          </li>
-          <li onclick="filterByStatus('Occupied'); toggleHamburger();" style="padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.3s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'">
-            <img src="https://img.icons8.com/ios/50/008080/cancel.png" width="24" />
-            <span style="font-weight: 600; color: var(--text-dark);">Occupied Apartments</span>
-          </li>
           <li id="hamburger-inquiries-btn" onclick="openAdminInquiries(); toggleHamburger();" style="display: none; padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; align-items: center; gap: 1rem; transition: 0.3s; background: var(--teal-light);" onmouseover="this.style.background='#b2dfdb'" onmouseout="this.style.background='var(--teal-light)'">
             <img src="https://img.icons8.com/ios-filled/50/008080/chat.png" width="24" />
             <span style="font-weight: 700; color: var(--teal-dark);">Admin Inquiries</span>
@@ -517,6 +534,19 @@
           <li id="hamburger-facilities-btn" onclick="openFacilitiesModal(); toggleHamburger();" style="display: none; padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; align-items: center; gap: 1rem; transition: 0.3s; background: var(--teal-light);" onmouseover="this.style.background='#b2dfdb'" onmouseout="this.style.background='var(--teal-light)'">
             <img src="https://img.icons8.com/ios-filled/50/008080/settings.png" width="24" />
             <span style="font-weight: 700; color: var(--teal-dark);">Manage Facilities</span>
+          </li>
+          <!-- New Management Links -->
+          <li onclick="openTenantsPage(); toggleHamburger();" style="padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.3s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'">
+            <img src="https://img.icons8.com/ios/50/008080/group.png" width="24" />
+            <span style="font-weight: 600; color: var(--text-dark);">Faculty Accounts</span>
+          </li>
+          <li onclick="openGlobalInventory(); toggleHamburger();" style="padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.3s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'">
+            <img src="https://img.icons8.com/ios/50/008080/box.png" width="24" />
+            <span style="font-weight: 600; color: var(--text-dark);">Global Inventory</span>
+          </li>
+          <li onclick="openManageApartments(); toggleHamburger();" style="padding: 1.5rem 2rem; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.3s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'">
+            <img src="https://img.icons8.com/ios/50/008080/apartment.png" width="24" />
+            <span style="font-weight: 600; color: var(--text-dark);">Manage Apartments</span>
           </li>
         </ul>
       </div>
@@ -598,6 +628,151 @@
         </div>
 
         <button class="btn-teal" style="width: 100%; padding: 1rem; font-size: 1rem;" onclick="saveFacilities()">Save Facilities Status</button>
+      </div>
+    </div>
+
+    <!-- Management Pages (Admin Only) -->
+    <div id="tenantsPage" class="modal">
+      <div class="modal-content" style="max-width: 95%; width: 1200px; padding: 3rem;">
+        <span class="close" onclick="hideModal('tenantsPage')">&times;</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+          <div>
+            <h1 style="font-size: 2.5rem; color: var(--text-dark);">Faculty Accounts</h1>
+            <p style="color: var(--text-light);">Dashboard > Faculty Management</p>
+          </div>
+          <button class="flash-btn" onclick="showModal('addFacultyModal')">+ Register New Faculty</button>
+        </div>
+        <div id="tenants-table-container" class="admin-table-wrapper">
+          <!-- Table dynamic -->
+        </div>
+      </div>
+    </div>
+
+    <div id="globalInventoryPage" class="modal">
+      <div class="modal-content" style="max-width: 95%; width: 1200px; padding: 3rem;">
+        <span class="close" onclick="hideModal('globalInventoryPage')">&times;</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+          <div>
+            <h1 style="font-size: 2.5rem; color: var(--text-dark);">Inventory</h1>
+            <p style="color: var(--text-light);">Dashboard > Inventory</p>
+          </div>
+          <button class="flash-btn" onclick="hideModal('globalInventoryPage'); showModal('addModal')">+ Add Item</button>
+        </div>
+        <div id="global-inventory-table-container" class="admin-table-wrapper">
+          <!-- Table dynamic -->
+        </div>
+      </div>
+    </div>
+
+    <div id="manageApartmentsPage" class="modal">
+      <div class="modal-content" style="max-width: 95%; width: 1200px; padding: 3rem;">
+        <span class="close" onclick="hideModal('manageApartmentsPage')">&times;</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+          <div>
+            <h1 style="font-size: 2.5rem; color: var(--text-dark);">Apartments</h1>
+            <p style="color: var(--text-light);">Dashboard > Apartments</p>
+          </div>
+          <button class="flash-btn" onclick="hideModal('manageApartmentsPage'); showModal('addModal')">+ Add Apartment</button>
+        </div>
+        <div id="apartments-table-container" class="admin-table-wrapper">
+          <!-- Table dynamic -->
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .admin-table-wrapper {
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        overflow: hidden;
+        border: 1px solid #eee;
+      }
+      .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .admin-table th {
+        background: #fcfcfc;
+        padding: 1.5rem;
+        text-align: left;
+        font-size: 0.8rem;
+        color: var(--text-light);
+        border-bottom: 2px solid #eee;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .admin-table td {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f5f5f5;
+        font-size: 0.95rem;
+        color: var(--text-dark);
+      }
+      .admin-table tr:hover {
+        background: #fafafa;
+      }
+      .action-icon-btn {
+        background: transparent;
+        border: 1px solid #eee;
+        padding: 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .action-icon-btn:hover {
+        background: #f0f0f0;
+        border-color: #ddd;
+      }
+    </style>
+
+    <!-- Add Faculty Modal -->
+    <div id="addFacultyModal" class="modal">
+      <div class="modal-content" style="max-width: 500px;">
+        <span class="close" onclick="hideModal('addFacultyModal')">&times;</span>
+        <h2 style="color: var(--teal-dark); margin-bottom: 1.5rem;">Register Faculty</h2>
+        <form id="add-faculty-form">
+          <div class="form-group">
+            <label>Faculty ID (Unique)</label>
+            <input type="text" name="facultyId" required placeholder="e.g. F001" style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+          </div>
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" name="name" required placeholder="Full Name" style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label>Role</label>
+            <select name="role" required style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+              <option value="Professor">Professor</option>
+              <option value="Associate Professor">Associate Professor</option>
+              <option value="Assistant Professor">Assistant Professor</option>
+              <option value="Staff">Staff</option>
+              <option value="Warden">Warden</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <input type="text" name="department" required placeholder="Department" style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+          </div>
+          <p style="font-size: 0.75rem; color: #999; margin-bottom: 1rem;">Default password will be <strong>FacultyID@123</strong></p>
+          <button type="submit" class="btn-teal" style="width: 100%;">Create Account</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Change Password Modal (Mandatory) -->
+    <div id="changePasswordModal" class="modal" style="background: rgba(0,0,0,0.85); z-index: 9999;">
+      <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <img src="https://img.icons8.com/ios-filled/100/008080/lock.png" style="margin-bottom: 1rem;" />
+        <h2 style="color: var(--teal-dark);">Secure Your Account</h2>
+        <p style="color: var(--text-light); margin-bottom: 1.5rem;">This is your first login. Please update your password to continue.</p>
+        <form id="change-password-form">
+          <input type="password" id="new-password" required placeholder="New Password" style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 1rem;">
+          <input type="password" id="confirm-password" required placeholder="Confirm New Password" style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 1.5rem;">
+          <button type="submit" class="btn-teal" style="width: 100%; padding: 1rem;">Update Password</button>
+        </form>
       </div>
     </div>
 
