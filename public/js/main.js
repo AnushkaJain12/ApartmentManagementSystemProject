@@ -289,9 +289,9 @@ async function refreshAdminDashboard() {
                     <td>${a.type}</td>
                     <td>${a.block}</td>
                     <td>
-                        <span style="color: ${a.status === 'Occupied' ? '#27ae60' : '#ff4757'}; font-size: 0.75rem; font-weight: 700;">
-                        ${a.status.toUpperCase()}
-                    </span>
+                        <span style="color: ${a.status === 'Occupied' ? '#27ae60' : '#ff4757'}; font-weight: 600;">
+                            ${a.status}
+                        </span>
                     </td>
                     <td style="color: #666;">${a.occupantName || '—'}</td>
                 </tr>
@@ -952,8 +952,8 @@ async function openTenantsPage() {
                         <td>${f.role}</td>
                         <td>${f.department}</td>
                         <td>
-                            <span style="color: #27ae60; font-size: 0.75rem; font-weight: 700;">
-                                ACTIVE
+                            <span style="color: #27ae60; font-weight: 600;">
+                                Active
                             </span>
                         </td>
                     </tr>
@@ -986,8 +986,8 @@ async function openGlobalInventory() {
                         <td style="font-weight: 600;">${i.itemName}</td>
                         <td>${i.quantity}</td>
                         <td>
-                            <span style="color: ${i.condition === 'Good' ? '#27ae60' : '#ff4757'}; font-size: 0.75rem; font-weight: 700;">
-                                ${i.condition.toUpperCase()}
+                            <span style="color: ${i.condition === 'Good' ? '#27ae60' : '#ff4757'}; font-weight: 600;">
+                                ${i.condition}
                             </span>
                         </td>
                         <td>
@@ -1028,8 +1028,8 @@ async function openManageApartments() {
                         <td>${a.block}</td>
                         <td>${a.type}</td>
                         <td>
-                            <span style="color: ${a.status === 'Occupied' ? '#27ae60' : '#ff4757'}; font-size: 0.75rem; font-weight: 700;">
-                                ${a.status.toUpperCase()}
+                            <span style="color: ${a.status === 'Occupied' ? '#27ae60' : '#ff4757'}; font-weight: 600;">
+                                ${a.status}
                             </span>
                         </td>
                         <td>${a.occupantName || '—'}</td>
