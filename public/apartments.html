@@ -268,6 +268,13 @@
           const formData = new FormData(e.target);
           const { id, ...data } = Object.fromEntries(formData.entries());
 
+          // If not Occupied, explicitly clear occupant fields
+          if (data.status === 'Available' || data.status === 'Maintenance') {
+              data.occupantName = '';
+              data.facultyId = '';
+              data.allotmentDate = '';
+          }
+
           const res = await fetch(`${API_URL}/apartments/${id}`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },

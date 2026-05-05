@@ -207,6 +207,13 @@ app.patch('/api/apartments/:id', async (req, res) => {
             // Force name to match registered faculty account for consistency
             req.body.occupantName = faculty.name;
         }
+
+        // If switching away from Occupied, clear occupant data
+        if (status === 'Available' || status === 'Maintenance') {
+            req.body.occupantName = '';
+            req.body.facultyId = '';
+            req.body.allotmentDate = null;
+        }
         
         // Archive to history if the occupant name is changing and the old one wasn't empty
         if (oldApt.occupantName && req.body.occupantName !== oldApt.occupantName) {
