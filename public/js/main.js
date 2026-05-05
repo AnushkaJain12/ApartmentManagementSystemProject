@@ -838,6 +838,9 @@ document.getElementById('allot-form').addEventListener('submit', async (e) => {
             hideModal('allotModal');
             fetchApartments();
             fetchActivities(); // Refresh activities
+        } else {
+            const errData = await res.json();
+            alert('Failed to update allotment: ' + (errData.message || 'Unknown error'));
         }
     } catch (err) {
         alert('Error updating allotment');
