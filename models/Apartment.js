@@ -8,7 +8,6 @@ const apartmentSchema = new mongoose.Schema({
             'Associate Professor Housing',
             'Professor Housing',
             'Assistant Professor Housing',
-            'Director House',
             'Grade 3 Housing',
             'Grade 4 Housing'
         ]
