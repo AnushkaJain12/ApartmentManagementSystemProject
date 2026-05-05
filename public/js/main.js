@@ -919,196 +919,26 @@ async function deleteApartment(id) {
     if (!confirm('Delete this unit?')) return;
     await fetch(`${API_URL}/apartments/${id}`, { method: 'DELETE' });
     fetchApartments();
-}
-
-document.getElementById('inquiry-form').addEventListener('submit', (e) => {
+}document.getElementById('inquiry-form').addEventListener('submit', (e) => {
     e.preventDefault();
-    // Simulate sending inquiry to admin
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
     
     data.date = new Date().toLocaleString();
-    submittedInquiries.push(data);
     
-    console.log("Inquiry sent to Admin:", data);
-    alert('Thank you! Your inquiry has been sent to the Admin. You will receive a reply at ' + data.email);
+    // Sync with localStorage for the new separate inquiries page
+    let inquiries = JSON.parse(localStorage.getItem('submittedInquiries')) || [];
+    inquiries.push(data);
+    localStorage.setItem('submittedInquiries', JSON.stringify(inquiries));
     
+    alert('Thank you! Your inquiry has been sent to the Admin.');
     closeSidebar();
     e.target.reset();
 });
 
-function openAdminInquiries() {
-    const list = document.getElementById('admin-inquiries-list');
-    
-    if (submittedInquiries.length === 0) {
-        list.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No inquiries received yet.</p>';
-    } else {
-        list.innerHTML = submittedInquiries.map(inq => `
-            <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--teal-main);">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <strong style="color: var(--teal-main); font-size: 1.1rem;">${inq.name}</strong>
-                    <span style="font-size: 0.8rem; color: #999;">${inq.date}</span>
-                </div>
-                <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.5rem;">
-                    <strong>Email:</strong> <a href="mailto:${inq.email}" style="color: var(--flash-teal); text-decoration: none;">${inq.email}</a><br>
-                    ${inq.phone ? `<strong>Phone:</strong> ${inq.phone}<br>` : ''}
-                    ${inq.apartment ? `<strong>Apartment Interest:</strong> ${inq.apartment}` : ''}
-                </p>
-                <div style="background: #fff; padding: 1rem; border-radius: 5px; border: 1px solid #eee; margin-top: 1rem;">
-                    <p style="font-size: 0.9rem; line-height: 1.5;">${inq.message}</p>
-                </div>
-            </div>
-        `).join('');
-    }
-    
-    showModal('adminInquiriesModal');
-}
-
-// Facilities Management Logic
-const facilitiesConfig = [
-    { key: 'water', label: 'Water Supply', icon: 'https://img.icons8.com/ios-filled/50/4a90e2/water.png' },
-    { key: 'electricity', label: 'Electricity', icon: 'https://img.icons8.com/ios-filled/50/4a90e2/flash-on.png' },
-    { key: 'internet', label: 'Internet', icon: 'https://img.icons8.com/ios-filled/50/4a90e2/wifi--v1.png' },
-    { key: 'parking', label: 'Parking', icon: 'https://img.icons8.com/ios-filled/50/4a90e2/parking.png' }
-];
-
-function openFacilitiesModal() {
-    renderFacilitiesForm();
-    showModal('facilitiesModal');
-}
-
-function renderFacilitiesForm() {
-    const block = document.getElementById('facility-block-select').value;
-    const list = document.getElementById('facilities-list');
-    
-    // Initialize if empty
-    if (!facilitiesData[block]) {
-        facilitiesData[block] = { water: 'Available', electricity: 'Available', internet: 'Available', parking: 'Available' };
-    }
-    
-    const data = facilitiesData[block];
-    
-    list.innerHTML = facilitiesConfig.map(f => `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f9f9f9; border-radius: 8px;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <img src="${f.icon}" width="20" />
-                <span style="font-weight: 600; font-size: 0.95rem;">${f.label}</span>
-            </div>
-            <select id="fac-${f.key}" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd; font-weight: 600; color: ${data[f.key] === 'Available' ? '#2ecc71' : (data[f.key] === 'Under Maintenance' ? '#e67e22' : '#e74c3c')};">
-                <option value="Available" ${data[f.key] === 'Available' ? 'selected' : ''}>Available</option>
-                <option value="Under Maintenance" ${data[f.key] === 'Under Maintenance' ? 'selected' : ''}>Under Maintenance</option>
-                <option value="Unavailable" ${data[f.key] === 'Unavailable' ? 'selected' : ''}>Unavailable</option>
-            </select>
-        </div>
-    `).join('');
-    
-    // Add event listeners to select elements to change their color dynamically
-    facilitiesConfig.forEach(f => {
-        const select = document.getElementById(`fac-${f.key}`);
-        select.addEventListener('change', (e) => {
-            const val = e.target.value;
-            e.target.style.color = val === 'Available' ? '#2ecc71' : (val === 'Under Maintenance' ? '#e67e22' : '#e74c3c');
-        });
-    });
-}
-
-function saveFacilities() {
-    const block = document.getElementById('facility-block-select').value;
-    
-    facilitiesConfig.forEach(f => {
-        facilitiesData[block][f.key] = document.getElementById(`fac-${f.key}`).value;
-    });
-    
-    alert(`Facilities status for ${block} updated successfully!`);
-    hideModal('facilitiesModal');
-}
-
-// Management Pages Logic
-
-async function openGlobalInventory() {
-    hideAllAdminPages();
-    document.getElementById('globalInventoryPage').style.display = 'block';
-    const res = await fetch(`${API_URL}/inventory`);
-    const items = await res.json();
-    const container = document.getElementById('global-inventory-table-container');
-    
-    container.innerHTML = `
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Item Name</th>
-                    <th>Quantity</th>
-                    <th>Condition</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${items.map(i => `
-                    <tr>
-                        <td style="font-weight: 600;">${i.itemName}</td>
-                        <td>${i.quantity}</td>
-                        <td>
-                            <span style="color: ${i.condition === 'Good' ? '#27ae60' : '#ff4757'}; font-weight: 600;">
-                                ${i.condition}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="action-icon-btn" onclick="editItem('${i._id}', '${i.itemName}', '${i.quantity}', '${i.condition}')">
-                                <img src="https://img.icons8.com/ios-glyphs/24/008080/edit.png" width="18"/>
-                            </button>
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
-}
-
-async function openManageApartments() {
-    hideAllAdminPages();
-    document.getElementById('manageApartmentsPage').style.display = 'block';
-    const res = await fetch(`${API_URL}/apartments`);
-    const apartments = await res.json();
-    const container = document.getElementById('apartments-table-container');
-    
-    container.innerHTML = `
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Unit No.</th>
-                    <th>Block</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Occupant</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${apartments.map(a => `
-                    <tr>
-                        <td style="font-weight: 700;">Unit ${a.apartmentNumber}</td>
-                        <td>${a.block}</td>
-                        <td>${a.type}</td>
-                        <td>
-                            <span style="color: ${a.status === 'Occupied' ? '#27ae60' : '#ff4757'}; font-weight: 600;">
-                                ${a.status}
-                            </span>
-                        </td>
-                        <td>${a.occupantName || '—'}</td>
-                        <td style="display: flex; gap: 0.5rem;">
-                            <button class="action-icon-btn" title="Manage Allotment" onclick="openAllotModal('${a._id}', '${a.apartmentNumber}', '${a.occupantName || ''}', '${a.facultyId || ''}', '${a.status}', '${(a.allotmentDate || '').split('T')[0]}')">
-                                <img src="https://img.icons8.com/ios-glyphs/24/008080/key.png" width="18"/>
-                            </button>
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
-}
 
 function hideAllAdminPages() {
-    const pages = ['tenantsPage', 'globalInventoryPage', 'manageApartmentsPage', 'admin-dashboard', 'campus-map-section'];
+    const pages = ['admin-dashboard', 'campus-map-section'];
     pages.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';

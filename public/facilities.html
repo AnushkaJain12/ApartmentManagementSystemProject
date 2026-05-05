@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Facilities | LNMIIT Housing</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .facilities-container {
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        padding: 2.5rem;
+        border: 1px solid #eee;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .back-btn {
+        background: transparent;
+        border: none;
+        color: var(--teal-main);
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        transition: 0.2s;
+        text-decoration: none;
+      }
+      .back-btn:hover {
+        transform: translateX(-5px);
+      }
+      select {
+          width: 100%;
+          padding: 1rem;
+          border-radius: 8px;
+          border: 1px solid #ddd;
+          font-family: 'Outfit', sans-serif;
+          font-size: 1rem;
+          outline: none;
+      }
+    </style>
+  </head>
+  <body style="background: #f8f9fa;">
+    <nav class="glass-nav scrolled" style="background: white; border-bottom: 1px solid #eee;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="logo" style="color: var(--teal-main);">LNMIIT<span>HOUSING</span></div>
+      </div>
+      <ul class="nav-links">
+        <li><a href="/" class="active">Back to Dashboard</a></li>
+      </ul>
+    </nav>
+
+    <div style="max-width: 1400px; margin: 0 auto; padding: 2rem; margin-top: 100px;">
+      <div style="margin-bottom: 2.5rem; margin-top: 1rem; text-align: center;">
+        <h1 style="font-size: 2.5rem; color: var(--text-dark); margin: 0;">Facilities Status</h1>
+        <p style="color: var(--text-light); margin-top: 0.5rem;">System Management > Facilities</p>
+      </div>
+
+      <div class="facilities-container">
+        <div class="form-group" style="margin-bottom: 2.5rem;">
+          <label style="font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 0.8rem;">Select Housing Block</label>
+          <select id="facility-block-select" onchange="renderFacilitiesForm()">
+            <option value="Professor Housing">Professor Housing</option>
+            <option value="Associate Prof Housing">Associate Prof Housing</option>
+            <option value="Assistant Prof Housing">Assistant Prof Housing</option>
+            <option value="Grade 3 Staff Housing">Grade 3 Staff Housing</option>
+            <option value="Grade 4 Staff Housing">Grade 4 Staff Housing</option>
+          </select>
+        </div>
+
+        <div id="facilities-list" style="display: flex; flex-direction: column; gap: 1.2rem; margin-bottom: 2.5rem;">
+          <!-- Dynamically populated via JS -->
+        </div>
+
+        <button class="btn-teal" style="width: 100%; padding: 1.2rem; font-size: 1.1rem; font-weight: 700;" onclick="saveFacilities()">Save Facilities Status</button>
+      </div>
+    </div>
+
+    <script>
+      const facilitiesConfig = [
+        { key: 'water', label: 'Water Supply', icon: 'https://img.icons8.com/ios-filled/50/4a90e2/water.png' },
+        { key: 'electricity', label: 'Electricity', icon: 'https://img.icons8.com/ios-filled/50/4a90e2/flash-on.png' },
+        { key: 'internet', label: 'Internet', icon: 'https://img.icons8.com/ios-filled/50/4a90e2/wifi--v1.png' },
+        { key: 'parking', label: 'Parking', icon: 'https://img.icons8.com/ios-filled/50/4a90e2/parking.png' }
+      ];
+
+      // Temporary local storage simulation for persistence
+      let facilitiesData = JSON.parse(localStorage.getItem('facilitiesData')) || {};
+
+      function renderFacilitiesForm() {
+        const block = document.getElementById('facility-block-select').value;
+        const list = document.getElementById('facilities-list');
+        
+        if (!facilitiesData[block]) {
+            facilitiesData[block] = { water: 'Available', electricity: 'Available', internet: 'Available', parking: 'Available' };
+        }
+        
+        const data = facilitiesData[block];
+        
+        list.innerHTML = facilitiesConfig.map(f => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; background: #f9f9f9; border-radius: 12px; border: 1px solid #eee;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <img src="${f.icon}" width="24" />
+                    <span style="font-weight: 600; font-size: 1rem;">${f.label}</span>
+                </div>
+                <select id="fac-${f.key}" style="width: auto; padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #ddd; font-weight: 600; color: ${data[f.key] === 'Available' ? '#2ecc71' : (data[f.key] === 'Under Maintenance' ? '#e67e22' : '#e74c3c')};" onchange="updateColor(this)">
+                    <option value="Available" ${data[f.key] === 'Available' ? 'selected' : ''}>Available</option>
+                    <option value="Under Maintenance" ${data[f.key] === 'Under Maintenance' ? 'selected' : ''}>Under Maintenance</option>
+                    <option value="Unavailable" ${data[f.key] === 'Unavailable' ? 'selected' : ''}>Unavailable</option>
+                </select>
+            </div>
+        `).join('');
+      }
+
+      function updateColor(select) {
+          const val = select.value;
+          select.style.color = val === 'Available' ? '#2ecc71' : (val === 'Under Maintenance' ? '#e67e22' : '#e74c3c');
+      }
+
+      function saveFacilities() {
+        const block = document.getElementById('facility-block-select').value;
+        facilitiesConfig.forEach(f => {
+            facilitiesData[block][f.key] = document.getElementById(`fac-${f.key}`).value;
+        });
+        localStorage.setItem('facilitiesData', JSON.stringify(facilitiesData));
+        alert(`Facilities status for ${block} updated successfully!`);
+      }
+
+      window.onload = () => {
+          const role = localStorage.getItem('userRole');
+          if (role !== 'admin') { window.location.href = '/'; return; }
+          renderFacilitiesForm();
+      };
+    </script>
+  </body>
+</html>
