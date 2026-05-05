@@ -12,18 +12,18 @@
       rel="stylesheet"
     />
     <style>
-      .admin-table-wrapper {
+      .table-wrapper {
         background: #fff;
         border-radius: 15px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
         overflow: hidden;
         border: 1px solid #eee;
       }
-      .admin-table {
+      .apt-table {
         width: 100%;
         border-collapse: collapse;
       }
-      .admin-table th {
+      .apt-table th {
         background: #fcfcfc;
         padding: 1.5rem;
         text-align: left;
@@ -33,56 +33,65 @@
         text-transform: uppercase;
         letter-spacing: 1px;
       }
-      .admin-table td {
+      .apt-table td {
         padding: 1.5rem;
         border-bottom: 1px solid #f5f5f5;
         font-size: 0.95rem;
         color: var(--text-dark);
       }
-      .admin-table tr:hover {
+      .apt-table tr:hover {
         background: #fafafa;
-      }
-      .back-btn {
-        background: transparent;
-        border: none;
-        color: var(--teal-main);
-        font-weight: 700;
-        cursor: pointer;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 0;
-        transition: 0.2s;
-        text-decoration: none;
-      }
-      .back-btn:hover {
-        transform: translateX(-5px);
       }
     </style>
   </head>
-  <body style="background: #f8f9fa;">
-    <nav class="glass-nav scrolled" style="background: white; border-bottom: 1px solid #eee;">
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <div class="logo" style="color: var(--teal-main);">LNMIIT<span>HOUSING</span></div>
+  <body style="background: #f8f9fa">
+    <nav
+      class="glass-nav scrolled"
+      style="background: white; border-bottom: 1px solid #eee"
+    >
+      <div style="display: flex; align-items: center; gap: 1rem">
+        <div class="logo" style="color: var(--teal-main)">
+          LNMIIT<span>HOUSING</span>
+        </div>
       </div>
       <ul class="nav-links">
         <li><a href="/" class="active">Back to Dashboard</a></li>
       </ul>
     </nav>
 
-    <div style="max-width: 1400px; margin: 0 auto; padding: 2rem; margin-top: 100px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; margin-top: 1rem;">
+    <div
+      style="
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+        margin-top: 100px;
+      "
+    >
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 2.5rem;
+          margin-top: 1rem;
+        "
+      >
         <div>
-          <h1 style="font-size: 2.5rem; color: var(--text-dark); margin: 0;">Apartment Units</h1>
-          <p style="color: var(--text-light); margin-top: 0.5rem;">System Management > Apartments</p>
+          <h1 style="font-size: 2.5rem; color: var(--text-dark); margin: 0">
+            Apartment Units
+          </h1>
+          <p style="color: var(--text-light); margin-top: 0.5rem">
+            System Management > Apartments
+          </p>
         </div>
-        <button class="flash-btn" onclick="showModal('addModal')">+ Add Apartment</button>
+        <button class="flash-btn" onclick="showModal('addModal')">
+          + Add Apartment
+        </button>
       </div>
-      <div id="apartments-table-container" class="admin-table-wrapper"></div>
+      <div id="apartments-table-container" class="table-wrapper"></div>
     </div>
 
-    <!-- Modals -->
+    <!-- Add Apartment Modal -->
     <div id="addModal" class="modal">
       <div class="modal-content">
         <span class="close" onclick="hideModal('addModal')">&times;</span>
@@ -92,8 +101,12 @@
             <label>Housing Block</label>
             <select name="block" required>
               <option value="Professor Housing">Professor Housing</option>
-              <option value="Associate Professor Housing">Associate Professor Housing</option>
-              <option value="Assistant Professor Housing">Assistant Professor Housing</option>
+              <option value="Associate Professor Housing">
+                Associate Professor Housing
+              </option>
+              <option value="Assistant Professor Housing">
+                Assistant Professor Housing
+              </option>
               <option value="Grade 3 Housing">Grade 3 Housing</option>
               <option value="Grade 4 Housing">Grade 4 Housing</option>
             </select>
@@ -117,7 +130,7 @@
       </div>
     </div>
 
-    <!-- Allotment Modal (Added for full management) -->
+    <!-- Allotment Modal -->
     <div id="allotModal" class="modal">
       <div class="modal-content">
         <span class="close" onclick="hideModal('allotModal')">&times;</span>
@@ -126,45 +139,82 @@
           <input type="hidden" name="id" id="edit-id" />
           <div class="form-group">
             <label>Faculty ID (Link to Account)</label>
-            <input type="text" name="facultyId" id="edit-faculty-id" placeholder="e.g. F001" style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+            <input
+              type="text"
+              name="facultyId"
+              id="edit-faculty-id"
+              placeholder="e.g. F001"
+              style="
+                width: 100%;
+                padding: 0.8rem;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+              "
+            />
           </div>
-
           <div class="form-group">
             <label>Allotment Date</label>
-            <input type="date" name="allotmentDate" id="edit-allot-date" style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;" />
+            <input
+              type="date"
+              name="allotmentDate"
+              id="edit-allot-date"
+              style="
+                width: 100%;
+                padding: 0.8rem;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+              "
+            />
           </div>
           <div class="form-group">
             <label>Status</label>
-            <select name="status" id="edit-status" style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+            <select
+              name="status"
+              id="edit-status"
+              style="
+                width: 100%;
+                padding: 0.8rem;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+              "
+            >
               <option value="Available">Available</option>
               <option value="Occupied">Occupied</option>
               <option value="Maintenance">Maintenance</option>
             </select>
           </div>
-          <button type="submit" class="btn-submit" style="width: 100%; margin-top: 1rem;">Update Allotment</button>
+          <button
+            type="submit"
+            class="btn-submit"
+            style="width: 100%; margin-top: 1rem"
+          >
+            Update Allotment
+          </button>
         </form>
       </div>
     </div>
 
     <script>
-      const API_URL = '/api';
+      const API_URL = "/api";
 
-      function showModal(id) { 
-        document.getElementById(id).style.display = 'block'; 
-        document.body.classList.add('no-scroll');
-      }
-      function hideModal(id) { 
-        document.getElementById(id).style.display = 'none'; 
-        document.body.classList.remove('no-scroll');
+      function showModal(id) {
+        document.getElementById(id).style.display = "block";
+        document.body.classList.add("no-scroll");
       }
 
+      function hideModal(id) {
+        document.getElementById(id).style.display = "none";
+        document.body.classList.remove("no-scroll");
+      }
+
+      // load and display all apartments in a table
       async function loadApartments() {
-          const res = await fetch(`${API_URL}/apartments`);
-          const apartments = await res.json();
-          const container = document.getElementById('apartments-table-container');
-          
-          container.innerHTML = `
-              <table class="admin-table">
+        const res = await fetch(`${API_URL}/apartments`);
+        const apartments = await res.json();
+        const container = document.getElementById("apartments-table-container");
+
+        container.innerHTML = `
+              <table class="apt-table">
                   <thead>
                       <tr>
                           <th>Unit No.</th>
@@ -176,19 +226,21 @@
                       </tr>
                   </thead>
                   <tbody>
-                      ${apartments.map(a => `
+                      ${apartments
+                        .map(
+                          (a) => `
                           <tr>
                               <td style="font-weight: 700;">Unit ${a.apartmentNumber}</td>
                               <td>${a.block}</td>
                               <td>${a.type}</td>
                               <td>
-                                  <span style="color: ${a.status === 'Occupied' ? '#27ae60' : '#ff4757'}; font-weight: 600;">
+                                  <span style="color: ${a.status === "Occupied" ? "#27ae60" : "#ff4757"}; font-weight: 600;">
                                       ${a.status}
                                   </span>
                               </td>
-                              <td>${a.occupantName || '—'}</td>
+                              <td>${a.occupantName || "—"}</td>
                               <td>
-                                  <button class="action-icon-btn" style="background: var(--teal-light); padding: 5px; border-radius: 4px;" onclick="openAllotModal('${a._id}', '${a.occupantName || ''}', '${a.status}', '${a.allotmentDate || ''}', '${a.facultyId || ''}')">
+                                  <button class="action-icon-btn" style="background: var(--teal-light); padding: 5px; border-radius: 4px;" onclick="openAllotModal('${a._id}', '${a.occupantName || ""}', '${a.status}', '${a.allotmentDate || ""}', '${a.facultyId || ""}')">
                                       <img src="https://img.icons8.com/ios-glyphs/24/008080/settings.png" width="18"/>
                                   </button>
                                   <button class="action-icon-btn" onclick="deleteApartment('${a._id}')">
@@ -196,119 +248,139 @@
                                   </button>
                               </td>
                           </tr>
-                      `).join('')}
+                      `,
+                        )
+                        .join("")}
                   </tbody>
               </table>
           `;
       }
 
       async function deleteApartment(id) {
-          if(!confirm('Delete this unit?')) return;
-          await fetch(`${API_URL}/apartments/${id}`, { method: 'DELETE' });
-          loadApartments();
+        if (!confirm("Delete this unit?")) return;
+        await fetch(`${API_URL}/apartments/${id}`, { method: "DELETE" });
+        loadApartments();
       }
 
       function openAllotModal(id, name, status, date, facultyId) {
-          document.getElementById('edit-id').value = id;
-          document.getElementById('edit-status').value = status;
-          document.getElementById('edit-faculty-id').value = facultyId === 'null' || !facultyId ? '' : facultyId;
-          
-          const facInput = document.getElementById('edit-faculty-id');
-          const dateInput = document.getElementById('edit-allot-date');
-          const facGroup = facInput.closest('.form-group');
-          const dateGroup = dateInput.closest('.form-group');
+        document.getElementById("edit-id").value = id;
+        document.getElementById("edit-status").value = status;
+        document.getElementById("edit-faculty-id").value =
+          facultyId === "null" || !facultyId ? "" : facultyId;
 
-          if (status === 'Available' || status === 'Maintenance') {
-              facGroup.style.display = 'none';
-              dateGroup.style.display = 'none';
-          } else {
-              facGroup.style.display = 'block';
-              dateGroup.style.display = 'block';
-          }
+        const facInput = document.getElementById("edit-faculty-id");
+        const dateInput = document.getElementById("edit-allot-date");
+        const facGroup = facInput.closest(".form-group");
+        const dateGroup = dateInput.closest(".form-group");
 
-          if (date) {
-              dateInput.value = new Date(date).toISOString().split('T')[0];
-          } else {
-              dateInput.value = '';
-          }
-          showModal('allotModal');
+        // hide extra fields if not occupied
+        if (status === "Available" || status === "Maintenance") {
+          facGroup.style.display = "none";
+          dateGroup.style.display = "none";
+        } else {
+          facGroup.style.display = "block";
+          dateGroup.style.display = "block";
+        }
+
+        if (date) {
+          dateInput.value = new Date(date).toISOString().split("T")[0];
+        } else {
+          dateInput.value = "";
+        }
+
+        showModal("allotModal");
       }
 
-      document.getElementById('edit-status').addEventListener('change', (e) => {
-          const facInput = document.getElementById('edit-faculty-id');
-          const dateInput = document.getElementById('edit-allot-date');
-          const facGroup = facInput.closest('.form-group');
-          const dateGroup = dateInput.closest('.form-group');
+      // hide/show fields when status changes
+      document.getElementById("edit-status").addEventListener("change", (e) => {
+        const facInput = document.getElementById("edit-faculty-id");
+        const dateInput = document.getElementById("edit-allot-date");
+        const facGroup = facInput.closest(".form-group");
+        const dateGroup = dateInput.closest(".form-group");
 
-          if (e.target.value === 'Available' || e.target.value === 'Maintenance') {
-              facInput.value = '';
-              dateInput.value = '';
-              facGroup.style.display = 'none';
-              dateGroup.style.display = 'none';
-          } else {
-              facGroup.style.display = 'block';
-              dateGroup.style.display = 'block';
-          }
+        if (
+          e.target.value === "Available" ||
+          e.target.value === "Maintenance"
+        ) {
+          facInput.value = "";
+          dateInput.value = "";
+          facGroup.style.display = "none";
+          dateGroup.style.display = "none";
+        } else {
+          facGroup.style.display = "block";
+          dateGroup.style.display = "block";
+        }
       });
 
-      document.getElementById('edit-faculty-id').addEventListener('input', (e) => {
-          const statusSelect = document.getElementById('edit-status');
-          const dateInput = document.getElementById('edit-allot-date');
-          if (e.target.value.trim() !== '') {
-              statusSelect.value = 'Occupied';
-              statusSelect.dispatchEvent(new Event('change'));
-              if (!dateInput.value) {
-                  dateInput.value = new Date().toISOString().split('T')[0];
-              }
+      // auto set status to occupied when faculty ID is typed
+      document
+        .getElementById("edit-faculty-id")
+        .addEventListener("input", (e) => {
+          const statusSelect = document.getElementById("edit-status");
+          const dateInput = document.getElementById("edit-allot-date");
+          if (e.target.value.trim() !== "") {
+            statusSelect.value = "Occupied";
+            statusSelect.dispatchEvent(new Event("change"));
+            if (!dateInput.value) {
+              dateInput.value = new Date().toISOString().split("T")[0];
+            }
           }
-      });
+        });
 
-      document.getElementById('allot-form').addEventListener('submit', async (e) => {
+      document
+        .getElementById("allot-form")
+        .addEventListener("submit", async (e) => {
           e.preventDefault();
           const formData = new FormData(e.target);
           const { id, ...data } = Object.fromEntries(formData.entries());
 
-          // If not Occupied, explicitly clear occupant fields
-          if (data.status === 'Available' || data.status === 'Maintenance') {
-              data.occupantName = '';
-              data.facultyId = '';
-              data.allotmentDate = '';
+          // clear occupant info if not occupied
+          if (data.status === "Available" || data.status === "Maintenance") {
+            data.occupantName = "";
+            data.facultyId = "";
+            data.allotmentDate = "";
           }
 
           const res = await fetch(`${API_URL}/apartments/${id}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(data)
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
           });
 
           if (res.ok) {
-              hideModal('allotModal');
-              loadApartments();
+            hideModal("allotModal");
+            loadApartments(); // refresh table
           } else {
-              const err = await res.json();
-              alert('Update Failed: ' + (err.message || 'Unknown error'));
+            const err = await res.json();
+            alert("Update Failed: " + (err.message || "Unknown error"));
           }
-      });
+        });
 
-      document.getElementById('add-apartment-form').addEventListener('submit', async (e) => {
+      document
+        .getElementById("add-apartment-form")
+        .addEventListener("submit", async (e) => {
           e.preventDefault();
           const formData = new FormData(e.target);
           const data = Object.fromEntries(formData.entries());
-          data.capacity = data.type === '3BHK' ? 6 : (data.type === '2BHK' ? 4 : 2);
-          
+          data.capacity =
+            data.type === "3BHK" ? 6 : data.type === "2BHK" ? 4 : 2;
+
           await fetch(`${API_URL}/apartments`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(data)
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
           });
-          hideModal('addModal');
+          hideModal("addModal");
           loadApartments();
-      });
+        });
 
       window.onload = () => {
-          const role = localStorage.getItem('userRole');
-          if (role !== 'admin') { window.location.href = '/'; return; }
-          loadApartments();
+        const role = localStorage.getItem("userRole");
+        if (role !== "admin") {
+          window.location.href = "/";
+          return;
+        }
+        loadApartments();
       };
     </script>
   </body>

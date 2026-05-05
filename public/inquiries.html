@@ -18,69 +18,71 @@
         border-radius: 15px;
         margin-bottom: 1.5rem;
         border-left: 6px solid var(--teal-main);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         transition: 0.3s;
       }
       .inquiry-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      }
-      .back-btn {
-        background: transparent;
-        border: none;
-        color: var(--teal-main);
-        font-weight: 700;
-        cursor: pointer;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 0;
-        transition: 0.2s;
-        text-decoration: none;
-      }
-      .back-btn:hover {
-        transform: translateX(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       }
     </style>
   </head>
-  <body style="background: #f8f9fa;">
-    <nav class="glass-nav scrolled" style="background: white; border-bottom: 1px solid #eee;">
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <div class="logo" style="color: var(--teal-main);">LNMIIT<span>HOUSING</span></div>
+  <body style="background: #f8f9fa">
+    <nav
+      class="glass-nav scrolled"
+      style="background: white; border-bottom: 1px solid #eee"
+    >
+      <div style="display: flex; align-items: center; gap: 1rem">
+        <div class="logo" style="color: var(--teal-main)">
+          LNMIIT<span>HOUSING</span>
+        </div>
       </div>
       <ul class="nav-links">
         <li><a href="/" class="active">Back to Dashboard</a></li>
       </ul>
     </nav>
 
-    <div style="max-width: 1000px; margin: 0 auto; padding: 2rem; margin-top: 100px;">
-      <div style="margin-bottom: 3rem; margin-top: 1rem;">
-        <h1 style="font-size: 2.5rem; color: var(--text-dark); margin: 0;">Guest & User Inquiries</h1>
-        <p style="color: var(--text-light); margin-top: 0.5rem;">System Management > Communication</p>
+    <div
+      style="
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem;
+        margin-top: 100px;
+      "
+    >
+      <div style="margin-bottom: 3rem; margin-top: 1rem">
+        <h1 style="font-size: 2.5rem; color: var(--text-dark); margin: 0">
+          Guest & User Inquiries
+        </h1>
+        <p style="color: var(--text-light); margin-top: 0.5rem">
+          System Management > Communication
+        </p>
       </div>
 
-      <div id="inquiries-container">
-        <!-- Dynamically populated -->
+      <div id="inquiries-list">
+        <!-- populated by JS -->
       </div>
     </div>
 
     <script>
-      // Temporary local storage simulation for persistence
-      let submittedInquiries = JSON.parse(localStorage.getItem('submittedInquiries')) || [];
+      // load from localStorage (inquiries are saved there from the main page)
+      let savedInquiries =
+        JSON.parse(localStorage.getItem("submittedInquiries")) || [];
 
-      function renderInquiries() {
-        const list = document.getElementById('inquiries-container');
-        
-        if (submittedInquiries.length === 0) {
-            list.innerHTML = `
+      function showInquiries() {
+        const list = document.getElementById("inquiries-list");
+
+        if (savedInquiries.length === 0) {
+          list.innerHTML = `
               <div style="text-align: center; padding: 5rem; background: #fff; border-radius: 15px; border: 1px dashed #ccc;">
                 <img src="https://img.icons8.com/ios/100/cccccc/envelope-open.png" style="margin-bottom: 1rem;" />
                 <h3 style="color: #999;">No inquiries received yet.</h3>
               </div>
             `;
         } else {
-            list.innerHTML = submittedInquiries.map((inq, index) => `
+          list.innerHTML = savedInquiries
+            .map(
+              (inq, index) => `
                 <div class="inquiry-card">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
                         <div>
@@ -92,8 +94,8 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; background: #f9f9f9; padding: 1.5rem; border-radius: 10px; border: 1px solid #eee;">
                         <p style="font-size: 0.9rem; color: var(--text-light); margin: 0;">
                             <strong>Email:</strong> <a href="mailto:${inq.email}" style="color: var(--flash-teal); text-decoration: none;">${inq.email}</a><br>
-                            ${inq.phone ? `<strong>Phone:</strong> ${inq.phone}<br>` : ''}
-                            ${inq.apartment ? `<strong>Apartment:</strong> ${inq.apartment}` : ''}
+                            ${inq.phone ? `<strong>Phone:</strong> ${inq.phone}<br>` : ""}
+                            ${inq.apartment ? `<strong>Apartment:</strong> ${inq.apartment}` : ""}
                         </p>
                         <div style="border-left: 2px solid #eee; padding-left: 1.5rem;">
                             <p style="font-size: 0.95rem; line-height: 1.6; color: #333; margin: 0;">
@@ -103,21 +105,29 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `,
+            )
+            .join("");
         }
       }
 
       function deleteInquiry(index) {
-          if(!confirm('Delete this inquiry?')) return;
-          submittedInquiries.splice(index, 1);
-          localStorage.setItem('submittedInquiries', JSON.stringify(submittedInquiries));
-          renderInquiries();
+        if (!confirm("Delete this inquiry?")) return;
+        savedInquiries.splice(index, 1);
+        localStorage.setItem(
+          "submittedInquiries",
+          JSON.stringify(savedInquiries),
+        );
+        showInquiries(); // re-render
       }
 
       window.onload = () => {
-          const role = localStorage.getItem('userRole');
-          if (role !== 'admin') { window.location.href = '/'; return; }
-          renderInquiries();
+        const role = localStorage.getItem("userRole");
+        if (role !== "admin") {
+          window.location.href = "/";
+          return;
+        }
+        showInquiries();
       };
     </script>
   </body>

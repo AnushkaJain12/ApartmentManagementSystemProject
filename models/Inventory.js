@@ -1,26 +1,31 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const inventorySchema = new mongoose.Schema({
+// each item/asset that belongs to a housing unit
+const inventorySchema = new mongoose.Schema(
+  {
     itemName: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     quantity: {
-        type: Number,
-        required: true,
-        default: 1
+      type: Number,
+      required: true,
+      default: 1,
     },
     condition: {
-        type: String,
-        required: true,
-        enum: ['New', 'Good', 'Damaged', 'Needs Replacement'],
-        default: 'Good'
+      type: String,
+      required: true,
+      enum: ["New", "Good", "Damaged", "Needs Replacement"],
+      default: "Good",
     },
+    // which apartment this item belongs to
     apartmentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Apartment',
-        required: true
-    }
-}, { timestamps: true });
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Apartment",
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
 
-module.exports = mongoose.model('Inventory', inventorySchema);
+module.exports = mongoose.model("Inventory", inventorySchema);
