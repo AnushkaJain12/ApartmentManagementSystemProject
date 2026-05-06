@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-// schema for each apartment/housing unit
 const apartmentSchema = new mongoose.Schema(
   {
     block: {
@@ -41,7 +40,6 @@ const apartmentSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
-    // who is currently living here
     occupantName: {
       type: String,
       default: "",
@@ -54,7 +52,6 @@ const apartmentSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    // keep a record of past occupants
     allotmentHistory: [
       {
         occupantName: String,

@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-// each item/asset that belongs to a housing unit
 const inventorySchema = new mongoose.Schema(
   {
     itemName: {
@@ -18,7 +17,6 @@ const inventorySchema = new mongoose.Schema(
       enum: ["New", "Good", "Damaged", "Needs Replacement"],
       default: "Good",
     },
-    // which apartment this item belongs to
     apartmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Apartment",

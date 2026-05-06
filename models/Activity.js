@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-// activity log - tracks things like unit allotments, new registrations, etc.
 const activitySchema = new mongoose.Schema(
   {
     type: {

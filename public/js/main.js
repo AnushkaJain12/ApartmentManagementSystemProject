@@ -1,36 +1,30 @@
 const API_URL = "/api";
 
-// grab the main grid and search box
 const apartmentGrid = document.getElementById("apartment-grid");
 const searchInput = document.getElementById("search-input");
 
 let allApartments = [];
-let currentMode = "guest"; // can be 'guest', 'admin', or 'user'
-let currentUser = null; // logged in faculty ID
+let currentMode = "guest";
+let currentUser = null;
 let facilitiesData = JSON.parse(localStorage.getItem("facilitiesData")) || {};
 
-// filters object - updated whenever user changes search/filter
 let currentFilters = {
   term: "",
   status: "all",
   block: "all",
 };
 
-// --- NAV SCROLL EFFECT ---
-
 window.addEventListener("scroll", () => {
   const nav = document.querySelector(".glass-nav");
   const sections = document.querySelectorAll("header, section");
   const navLinks = document.querySelectorAll(".nav-links a");
 
-  // add scrolled class to nav after 50px
   if (window.scrollY > 50) {
     nav.classList.add("scrolled");
   } else {
     nav.classList.remove("scrolled");
   }
 
-  // highlight the correct nav link based on scroll position
   let current = "";
   sections.forEach((section) => {
     const sectionTop = section.offsetTop;
@@ -48,10 +42,7 @@ window.addEventListener("scroll", () => {
   });
 });
 
-// --- PAGE LOAD SETUP ---
-
 document.addEventListener("DOMContentLoaded", () => {
-  // restore saved role if user refreshes the page
   const savedRole = localStorage.getItem("userRole");
   if (savedRole) {
     selectRole(savedRole);
@@ -59,13 +50,11 @@ document.addEventListener("DOMContentLoaded", () => {
     showDashboard();
   }
 
-  // status filter dropdown
   const statusFilter = document.getElementById("status-filter");
   if (statusFilter) {
     statusFilter.addEventListener("change", (e) => {
       currentFilters.status = e.target.value;
 
-      // change color based on selected status
       if (currentFilters.status === "Available")
         e.target.style.color = "#27ae60";
       else if (currentFilters.status === "Occupied")
@@ -80,7 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   getUnits();
 
-  // mobile hamburger menu
   const mobileMenu = document.getElementById("mobile-menu");
   const navLinksContainer = document.getElementById("nav-links");
 
@@ -91,7 +79,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // close mobile menu when a nav link is clicked
   document.querySelectorAll(".nav-links a").forEach((link) => {
     link.addEventListener("click", () => {
       navLinksContainer.classList.remove("active");
@@ -101,7 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 window.onload = () => {
-  // open admin login if user went to /admin
   if (window.location.pathname === "/admin") {
     openLoginModal("admin");
   } else {
@@ -116,8 +102,6 @@ window.onload = () => {
     }
   }
 };
-
-// --- FETCH AND RENDER APARTMENTS ---
 
 async function getUnits() {
   try {
@@ -189,11 +173,9 @@ function showUnits(apartments) {
     .join("");
 }
 
-// apply all three filters together
 function applyFilters() {
   let filtered = allApartments;
 
-  // filter by search text
   if (currentFilters.term) {
     const term = currentFilters.term.toLowerCase();
     filtered = filtered.filter((apt) => {
@@ -206,12 +188,10 @@ function applyFilters() {
     });
   }
 
-  // filter by status
   if (currentFilters.status !== "all") {
     filtered = filtered.filter((apt) => apt.status === currentFilters.status);
   }
 
-  // filter by block
   if (currentFilters.block !== "all") {
     filtered = filtered.filter((apt) => apt.block === currentFilters.block);
   }
@@ -219,7 +199,6 @@ function applyFilters() {
   showUnits(filtered);
 }
 
-// filter from the block icon buttons
 function filterByBlock(blockName) {
   currentFilters.block = blockName;
   applyFilters();
@@ -233,7 +212,6 @@ function filterByStatus(status) {
 }
 
 function showAllApartments() {
-  // reset all filters
   currentFilters = { term: "", status: "all", block: "all" };
   if (searchInput) searchInput.value = "";
 
@@ -246,12 +224,9 @@ function showAllApartments() {
   document.getElementById("inventory").scrollIntoView({ behavior: "smooth" });
 }
 
-// --- MODE SWITCHING (admin / user / guest) ---
-
 function changeMode(mode) {
   currentMode = mode;
 
-  // grab all the elements we need to show/hide
   const addBtn = document.getElementById("add-unit-btn");
   const hamburgerInquiriesBtn = document.getElementById(
     "hamburger-inquiries-btn",
@@ -307,7 +282,6 @@ function changeMode(mode) {
     if (categoriesSection) categoriesSection.style.display = "none";
     if (heroSearchBar) heroSearchBar.style.display = "none";
   } else {
-    // guest mode
     if (adminDashboard) adminDashboard.style.display = "none";
     if (mapSection) mapSection.style.display = "block";
     if (quickFeatures) quickFeatures.style.display = "block";
@@ -324,23 +298,17 @@ function changeMode(mode) {
     if (heroSearchBar) heroSearchBar.style.display = "flex";
   }
 
-  // re-render cards so admin buttons show/hide properly
   applyFilters();
 }
 
-// --- ADMIN DASHBOARD ---
-
 async function loadAdminDashboard() {
   try {
-    // get stats
     const statsRes = await fetch(`${API_URL}/stats`);
     const stats = await statsRes.json();
 
-    // get faculty count
     const facRes = await fetch(`${API_URL}/faculty`);
     const facultyList = await facRes.json();
 
-    // update stat cards
     document.getElementById("stat-total").innerText = stats.total || 0;
     document.getElementById("stat-occupied").innerText = stats.occupied || 0;
     document.getElementById("stat-vacant").innerText = stats.available || 0;
@@ -356,7 +324,6 @@ async function loadAdminDashboard() {
     document.getElementById("stat-vacant-pct").innerText =
       `${vacantPct}% Vacant`;
 
-    // update the donut chart
     const donut = document.getElementById("occupancy-donut");
     if (donut) {
       donut.style.background = `conic-gradient(var(--teal-main) 0% ${occupiedPct}%, #eee ${occupiedPct}% 100%)`;
@@ -365,7 +332,6 @@ async function loadAdminDashboard() {
     document.getElementById("legend-occupied").innerText = stats.occupied || 0;
     document.getElementById("legend-vacant").innerText = stats.available || 0;
 
-    // show first 5 units in snapshot table
     const aptRes = await fetch(`${API_URL}/apartments`);
     const apartments = await aptRes.json();
     const snapshotBody = document.getElementById("snapshot-table-body");
@@ -395,12 +361,9 @@ async function loadAdminDashboard() {
   }
 }
 
-// alias used in a few places
 function refreshAdminDashboard() {
   loadAdminDashboard();
 }
-
-// --- ACTIVITIES ---
 
 async function loadActivities() {
   try {
@@ -412,7 +375,6 @@ async function loadActivities() {
   }
 }
 
-// alias
 function fetchActivities() {
   loadActivities();
 }
@@ -423,7 +385,6 @@ function showActivities(activities) {
 
   if (!dashboardList) return;
 
-  // build the html for one activity item
   function makeActivityItem(act) {
     return `
             <div style="display: flex; gap: 1rem; align-items: flex-start;">
@@ -442,14 +403,12 @@ function showActivities(activities) {
     dashboardList.innerHTML =
       '<p style="color: #999; font-size: 0.85rem; text-align: center;">No recent activities.</p>';
   } else {
-    // show only first 5 on dashboard
     dashboardList.innerHTML = activities
       .slice(0, 5)
       .map(makeActivityItem)
       .join("");
   }
 
-  // show all in the modal
   if (modalList) {
     modalList.innerHTML =
       activities.length === 0
@@ -460,10 +419,9 @@ function showActivities(activities) {
 
 function openActivitiesModal() {
   showModal("activitiesModal");
-  loadActivities(); // refresh before showing
+  loadActivities();
 }
 
-// convert a date to "5 mins ago" style string
 function getRelativeTime(date) {
   const now = new Date();
   const diffInSeconds = Math.floor((now - date) / 1000);
@@ -475,12 +433,9 @@ function getRelativeTime(date) {
   return date.toLocaleDateString();
 }
 
-// alias used in renderActivities calls
 function formatRelativeTime(date) {
   return getRelativeTime(date);
 }
-
-// --- MY APARTMENT (faculty view) ---
 
 async function showMyApartment() {
   const container = document.getElementById("my-apt-container");
@@ -490,11 +445,9 @@ async function showMyApartment() {
     return;
   }
 
-  // fetch fresh apartment data
   const res = await fetch(`${API_URL}/apartments`);
   allApartments = await res.json();
 
-  // find the apartment assigned to this faculty
   const myApt = allApartments.find(
     (apt) => (apt.facultyId || "").toLowerCase() === currentUser.toLowerCase(),
   );
@@ -510,11 +463,9 @@ async function showMyApartment() {
     return;
   }
 
-  // get inventory for the apartment
   const invRes = await fetch(`${API_URL}/inventory/${myApt._id}`);
   const inventory = await invRes.json();
 
-  // get facilities from localStorage
   facilitiesData = JSON.parse(localStorage.getItem("facilitiesData")) || {};
   const facilities = facilitiesData[myApt.block] || {
     water: "Available",
@@ -525,7 +476,6 @@ async function showMyApartment() {
 
   container.innerHTML = `
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; flex-wrap: wrap;">
-            <!-- Unit Info -->
             <div style="background: #fff; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
                     <div>
@@ -549,7 +499,6 @@ async function showMyApartment() {
                 </div>
             </div>
 
-            <!-- Facilities & Inventory -->
             <div style="display: flex; flex-direction: column; gap: 2rem;">
                 <div style="background: #fff; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
                     <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
@@ -602,12 +551,9 @@ async function showMyApartment() {
     `;
 }
 
-// alias used in some places
 function renderMyApartment() {
   showMyApartment();
 }
-
-// --- LOGIN / LOGOUT ---
 
 function selectRole(role) {
   localStorage.setItem("userRole", role);
@@ -663,7 +609,6 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
       localStorage.setItem("userRole", data.role);
       hideModal("loginModal");
 
-      // show password change screen on first login
       if (data.firstLogin) {
         showModal("changePasswordModal");
       } else {
@@ -710,14 +655,11 @@ document
     }
   });
 
-// --- SEARCH ---
-
 searchInput.addEventListener("input", (e) => {
   currentFilters.term = e.target.value;
   applyFilters();
 });
 
-// scroll to results on Enter key
 searchInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     document.getElementById("inventory").scrollIntoView({ behavior: "smooth" });
@@ -727,8 +669,6 @@ searchInput.addEventListener("keydown", (e) => {
 function scrollToResults() {
   document.getElementById("inventory").scrollIntoView({ behavior: "smooth" });
 }
-
-// --- MODAL HELPERS ---
 
 function showModal(id) {
   document.getElementById(id).style.display = "block";
@@ -749,7 +689,6 @@ function closeAllModals() {
   document.body.classList.remove("no-scroll");
 }
 
-// change apartment type options based on selected block
 function updateTypeOptions() {
   const blockSelect = document.getElementById("add-apt-block-select");
   const typeSelect = document.getElementById("add-apt-type-select");
@@ -773,7 +712,6 @@ function updateTypeOptions() {
     .join("");
 }
 
-// open the allotment edit modal and fill in current values
 function openAllotModal(id, name, status, date, facultyId) {
   document.getElementById("edit-id").value = id;
   document.getElementById("edit-faculty-id").value =
@@ -785,7 +723,6 @@ function openAllotModal(id, name, status, date, facultyId) {
   const facultyGroup = facultyInput.closest(".form-group");
   const dateGroup = dateInput.closest(".form-group");
 
-  // hide faculty/date fields if not occupied
   if (status === "Available" || status === "Maintenance") {
     facultyGroup.style.display = "none";
     dateGroup.style.display = "none";
@@ -794,7 +731,6 @@ function openAllotModal(id, name, status, date, facultyId) {
     dateGroup.style.display = "block";
   }
 
-  // format the date properly for the date input
   if (date && date !== "null" && date !== "undefined") {
     const d = new Date(date);
     dateInput.value = d.toISOString().split("T")[0];
@@ -805,7 +741,6 @@ function openAllotModal(id, name, status, date, facultyId) {
   showModal("allotModal");
 }
 
-// sidebar open/close for inquiry
 function openSidebar() {
   document.getElementById("inquiry-sidebar").classList.add("open");
 }
@@ -822,8 +757,6 @@ function toggleHamburger() {
     drawer.style.left = "0px";
   }
 }
-
-// --- INVENTORY ---
 
 async function openInventoryModal(aptId, aptNum) {
   document.getElementById("inv-apt-id").value = aptId;
@@ -885,7 +818,6 @@ async function loadInventoryItems(aptId) {
     `;
 }
 
-// alias used by other pages
 function fetchInventory(aptId) {
   loadInventoryItems(aptId);
 }
@@ -893,10 +825,9 @@ function fetchInventory(aptId) {
 async function removeItem(id, aptId) {
   if (!confirm("Remove this item?")) return;
   await fetch(`${API_URL}/inventory/${id}`, { method: "DELETE" });
-  loadInventoryItems(aptId); // refresh the list
+  loadInventoryItems(aptId);
 }
 
-// alias for removeItem
 function deleteItem(id, aptId) {
   removeItem(id, aptId);
 }
@@ -910,7 +841,6 @@ function openEditItem(id, name, qty, cond, aptId) {
   showModal("editItemModal");
 }
 
-// alias
 function editItem(id, name, qty, cond, aptId) {
   openEditItem(id, name, qty, cond, aptId);
 }
@@ -945,9 +875,6 @@ async function viewHistory() {
   showModal("historyModal");
 }
 
-// --- FORMS ---
-
-// check for duplicate unit number while typing
 function checkUnitNumber() {
   const unitInput = document.getElementById("add-apt-num-input");
   const blockInput = document.getElementById("add-apt-block-select");
@@ -981,7 +908,6 @@ document
     const unitVal = document.getElementById("add-apt-num-input").value;
     const blockVal = document.getElementById("add-apt-block-select").value;
 
-    // double check before submitting
     const alreadyExists = allApartments.some(
       (a) => a.apartmentNumber == unitVal && a.block === blockVal,
     );
@@ -1003,7 +929,6 @@ document
       }
     });
 
-    // set capacity based on type
     data.capacity = data.type === "3BHK" ? 6 : data.type === "2BHK" ? 4 : 2;
     data.floor = 0;
 
@@ -1017,7 +942,7 @@ document
       if (res.ok) {
         hideModal("addModal");
         getUnits();
-        loadActivities(); // update activity feed
+        loadActivities();
       } else {
         const errData = await res.json();
         alert(
@@ -1029,7 +954,6 @@ document
     }
   });
 
-// auto-set status to Occupied when faculty ID is typed
 document.getElementById("edit-faculty-id").addEventListener("input", (e) => {
   const statusSelect = document.getElementById("edit-status");
   const dateInput = document.getElementById("edit-allot-date");
@@ -1038,14 +962,12 @@ document.getElementById("edit-faculty-id").addEventListener("input", (e) => {
     statusSelect.value = "Occupied";
     statusSelect.dispatchEvent(new Event("change"));
 
-    // set today's date if not already set
     if (!dateInput.value) {
       dateInput.value = new Date().toISOString().split("T")[0];
     }
   }
 });
 
-// show/hide faculty and date fields based on status
 document.getElementById("edit-status").addEventListener("change", (e) => {
   const facultyInput = document.getElementById("edit-faculty-id");
   const dateInput = document.getElementById("edit-allot-date");
@@ -1078,7 +1000,7 @@ document.getElementById("allot-form").addEventListener("submit", async (e) => {
     if (res.ok) {
       hideModal("allotModal");
       getUnits();
-      loadActivities(); // update after assigning unit
+      loadActivities();
     } else {
       const errData = await res.json();
       alert(
@@ -1097,7 +1019,6 @@ document
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
 
-    // item names shouldn't have numbers
     if (/\d/.test(data.itemName)) {
       alert(
         "Item name is not proper. Please enter a proper name without numbers.",
@@ -1117,7 +1038,7 @@ document
       if (res.ok) {
         e.target.reset();
         hideModal("addItemModal");
-        loadInventoryItems(data.apartmentId); // refresh inventory list
+        loadInventoryItems(data.apartmentId);
       } else {
         const errData = await res.json();
         alert("Failed to add item: " + (errData.message || "Unknown error"));
@@ -1137,7 +1058,6 @@ document
       formData.entries(),
     );
 
-    // validate item name
     if (/\d/.test(data.itemName)) {
       alert(
         "Item name is not proper. Please enter a proper name without numbers.",
@@ -1156,7 +1076,7 @@ document
 
       if (res.ok) {
         hideModal("editItemModal");
-        loadInventoryItems(apartmentId); // refresh after edit
+        loadInventoryItems(apartmentId);
       } else {
         const errData = await res.json();
         alert("Failed to update item: " + (errData.message || "Unknown error"));
@@ -1173,7 +1093,6 @@ async function deleteUnit(id) {
   getUnits();
 }
 
-// alias used in some places
 function deleteApartment(id) {
   deleteUnit(id);
 }
@@ -1185,7 +1104,6 @@ document.getElementById("inquiry-form").addEventListener("submit", (e) => {
 
   data.date = new Date().toLocaleString();
 
-  // save to localStorage so inquiries page can read it
   let inquiries = JSON.parse(localStorage.getItem("submittedInquiries")) || [];
   inquiries.push(data);
   localStorage.setItem("submittedInquiries", JSON.stringify(inquiries));

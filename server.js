@@ -14,29 +14,24 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// basic middleware setup
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-// serve the main page for both root and /admin
 app.get(["/", "/admin"], (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// connect to mongodb
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("Connected to MongoDB");
 
-    // drop old index that causes problems
     mongoose.connection.db
       .collection("apartments")
       .dropIndex("unitId_1")
       .then(() => console.log("Dropped unitId_1 index"))
       .catch((err) => {
-        // error code 27 means index not found, that's fine
         if (err.code !== 27) {
           console.error("Error dropping index:", err.message);
         }
@@ -44,7 +39,6 @@ mongoose
   })
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// helper to save an activity log entry
 async function saveActivity(
   type,
   description,
@@ -59,21 +53,17 @@ async function saveActivity(
   }
 }
 
-// --- AUTH ROUTES ---
-
 app.post("/api/login", async (req, res) => {
   const { username, password, role } = req.body;
 
   try {
     if (role === "admin") {
-      // simple static admin check for now
       if (username === "admin" && password === "admin") {
         return res.json({ role: "admin", user: { name: "Administrator" } });
       }
       return res.status(401).json({ message: "Invalid Admin Credentials" });
     }
 
-    // faculty login
     const faculty = await Faculty.findOne({ facultyId: username });
     if (!faculty) {
       return res.status(401).json({ message: "Faculty ID not found" });
@@ -94,20 +84,15 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// --- FACULTY ROUTES ---
-
-// add a new faculty account
 app.post("/api/faculty", async (req, res) => {
   try {
     const { facultyId, name, role, department } = req.body;
 
-    // check if this faculty ID already exists
     const alreadyExists = await Faculty.findOne({ facultyId });
     if (alreadyExists) {
       return res.status(400).json({ message: "Faculty ID already exists" });
     }
 
-    // default password is FacultyID@123
     const defaultPassword = `${facultyId}@123`;
     const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
@@ -133,7 +118,6 @@ app.post("/api/faculty", async (req, res) => {
   }
 });
 
-// get all faculty (without passwords)
 app.get("/api/faculty", async (req, res) => {
   try {
     const facultyList = await Faculty.find().select("-password");
@@ -143,7 +127,6 @@ app.get("/api/faculty", async (req, res) => {
   }
 });
 
-// change password (used on first login)
 app.patch("/api/faculty/change-password", async (req, res) => {
   const { facultyId, newPassword } = req.body;
   try {
@@ -158,9 +141,6 @@ app.patch("/api/faculty/change-password", async (req, res) => {
   }
 });
 
-// --- APARTMENT ROUTES ---
-
-// get all apartments
 app.get("/api/apartments", async (req, res) => {
   try {
     const apartments = await Apartment.find();
@@ -170,12 +150,10 @@ app.get("/api/apartments", async (req, res) => {
   }
 });
 
-// register a new apartment unit
 app.post("/api/apartments", async (req, res) => {
   try {
     const { apartmentNumber } = req.body;
 
-    // make sure this unit number doesn't already exist
     const duplicate = await Apartment.findOne({ apartmentNumber });
     if (duplicate) {
       return res
@@ -199,20 +177,16 @@ app.post("/api/apartments", async (req, res) => {
   }
 });
 
-// update apartment details (allotment, status, etc.)
 app.patch("/api/apartments/:id", async (req, res) => {
   try {
     const { facultyId, status } = req.body;
     const apartmentId = req.params.id;
 
-    // get current apartment data first
     const currentApt = await Apartment.findById(apartmentId);
     if (!currentApt)
       return res.status(404).json({ message: "Apartment not found" });
 
-    // if we're assigning this to someone, do some checks
     if (status === "Occupied" && facultyId) {
-      // check this faculty isn't already assigned somewhere else
       const alreadyAssigned = await Apartment.findOne({
         facultyId,
         _id: { $ne: apartmentId },
@@ -226,7 +200,6 @@ app.patch("/api/apartments/:id", async (req, res) => {
           });
       }
 
-      // make sure this faculty account exists
       const faculty = await Faculty.findOne({ facultyId });
       if (!faculty) {
         return res
@@ -236,7 +209,6 @@ app.patch("/api/apartments/:id", async (req, res) => {
           });
       }
 
-      // check if the faculty role matches the block type
       const facultyRole = faculty.role;
       const blockName = currentApt.block;
       let eligible = false;
@@ -258,7 +230,7 @@ app.patch("/api/apartments/:id", async (req, res) => {
         (blockName === "Grade 3 Housing" || blockName === "Grade 4 Housing")
       )
         eligible = true;
-      else if (facultyRole === "Other") eligible = true; // other role gets some flexibility
+      else if (facultyRole === "Other") eligible = true;
 
       if (!eligible) {
         return res.status(400).json({
@@ -266,18 +238,15 @@ app.patch("/api/apartments/:id", async (req, res) => {
         });
       }
 
-      // use the official name from faculty account
       req.body.occupantName = faculty.name;
     }
 
-    // if making available or maintenance, clear the occupant info
     if (status === "Available" || status === "Maintenance") {
       req.body.occupantName = "";
       req.body.facultyId = "";
       req.body.allotmentDate = null;
     }
 
-    // save old occupant to history if they are being replaced
     if (
       currentApt.occupantName &&
       req.body.occupantName !== currentApt.occupantName
@@ -288,7 +257,6 @@ app.patch("/api/apartments/:id", async (req, res) => {
         allotmentDate: currentApt.allotmentDate,
       });
 
-      // set today as new allotment date if someone is moving in
       if (req.body.occupantName) {
         req.body.allotmentDate = new Date();
       }
@@ -317,7 +285,6 @@ app.patch("/api/apartments/:id", async (req, res) => {
   }
 });
 
-// delete an apartment
 app.delete("/api/apartments/:id", async (req, res) => {
   try {
     await Apartment.findByIdAndDelete(req.params.id);
@@ -327,9 +294,6 @@ app.delete("/api/apartments/:id", async (req, res) => {
   }
 });
 
-// --- INVENTORY ROUTES ---
-
-// get all inventory (with apartment info)
 app.get("/api/inventory", async (req, res) => {
   try {
     const items = await Inventory.find().populate(
@@ -342,7 +306,6 @@ app.get("/api/inventory", async (req, res) => {
   }
 });
 
-// get inventory for a specific apartment
 app.get("/api/inventory/:apartmentId", async (req, res) => {
   try {
     const items = await Inventory.find({ apartmentId: req.params.apartmentId });
@@ -352,11 +315,9 @@ app.get("/api/inventory/:apartmentId", async (req, res) => {
   }
 });
 
-// add a new inventory item
 app.post("/api/inventory", async (req, res) => {
   const { itemName } = req.body;
 
-  // item names shouldn't have numbers
   if (/\d/.test(itemName)) {
     return res
       .status(400)
@@ -375,7 +336,6 @@ app.post("/api/inventory", async (req, res) => {
   }
 });
 
-// update an inventory item
 app.patch("/api/inventory/:id", async (req, res) => {
   try {
     const updated = await Inventory.findByIdAndUpdate(req.params.id, req.body, {
@@ -387,7 +347,6 @@ app.patch("/api/inventory/:id", async (req, res) => {
   }
 });
 
-// delete an inventory item
 app.delete("/api/inventory/:id", async (req, res) => {
   try {
     await Inventory.findByIdAndDelete(req.params.id);
@@ -396,8 +355,6 @@ app.delete("/api/inventory/:id", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-// --- STATS ROUTE ---
 
 app.get("/api/stats", async (req, res) => {
   try {
@@ -413,11 +370,8 @@ app.get("/api/stats", async (req, res) => {
   }
 });
 
-// --- ACTIVITY ROUTE ---
-
 app.get("/api/activities", async (req, res) => {
   try {
-    // newest first
     const activities = await Activity.find().sort({ createdAt: -1 });
     res.json(activities);
   } catch (err) {

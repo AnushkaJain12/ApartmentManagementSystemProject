@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-// each faculty member who can log in to the system
 const facultySchema = new mongoose.Schema({
   facultyId: {
     type: String,
@@ -32,7 +31,6 @@ const facultySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // true until they change their default password
   firstLogin: {
     type: Boolean,
     default: true,
